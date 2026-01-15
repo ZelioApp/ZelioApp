@@ -8,7 +8,7 @@
 <style>
 :root { --primary: #4f46e5; --bg: #f1f5f9; --card: #ffffff; --text: #1f2937; --accent: #10b981; }
 * { box-sizing: border-box; }
-body { margin: 0; font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); padding-bottom: 160px; }
+body { margin: 0; font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); padding-bottom: 180px; }
 .header-brand { background: white; padding: 1.5rem; text-align: center; border-bottom: 1px solid #e2e8f0; }
 .logo-text { font-size: 2.5rem; font-weight: 900; color: var(--primary); letter-spacing: -2px; margin: 0; }
 .logo-subtitle { font-size: 0.8rem; color: #64748b; text-transform: uppercase; letter-spacing: 2px; margin-top: -5px; }
@@ -63,6 +63,7 @@ select, input[type="number"] { width: 70px; padding: 0.4rem; border-radius: 6px;
   <button class="tab-btn" onclick="showPage('favorites', event)">⭐ Favoris</button>
   <button class="tab-btn" onclick="showPage('clients', event)">👥 Clients</button>
   <button class="tab-btn" onclick="showPage('export', event)">💾 Sauvegarde</button>
+  <button class="tab-btn" onclick="showPage('folders', event)">📁 Dossiers</button>
 </div>
 
 <div class="container">
@@ -92,7 +93,11 @@ select, input[type="number"] { width: 70px; padding: 0.4rem; border-radius: 6px;
     </div>
     <div class="form-section">
       <h2>📸 Photos du Chantier</h2>
-      <input type="file" id="site-photos" accept="image/*" multiple style="margin-bottom:10px;">
+      <input type="file" id="site-photos" accept="image/*" multiple capture="environment" style="margin-bottom:10px;">
+      <button class="btn-small" onclick="takePhoto()">📷 Prendre une photo</button>
+      <video id="camera-stream" style="display:none; width:100%; max-width:300px; margin:10px 0;" autoplay></video>
+      <button id="capture-btn" class="btn-small" style="display:none;">Capturer</button>
+      <canvas id="photo-canvas" style="display:none;"></canvas>
       <div id="photo-preview" style="display:flex; gap:10px; flex-wrap:wrap;"></div>
     </div>
     <div class="accordion-controls">
@@ -140,7 +145,15 @@ select, input[type="number"] { width: 70px; padding: 0.4rem; border-radius: 6px;
       <h2>💾 Sauvegarde / Restauration</h2>
       <button class="btn-small" onclick="exportData()">Exporter la base (JSON)</button>
       <input type="file" id="import-file" accept=".json" style="margin-top:10px;">
-      <p style="font-size:0.9em; color:#64748b;">Exportez ou importez toutes vos données (produits, clients, photos, favoris, etc.)</p>
+      <p style="font-size:0.9em; color:#64748b;">Exportez ou importez toutes vos données (produits, clients, photos, favoris, dossiers, etc.)</p>
+    </div>
+  </div>
+
+  <!-- PAGE DOSSIERS -->
+  <div id="page-folders" class="page">
+    <div class="form-section">
+      <h2>📁 Dossiers Clients</h2>
+      <div id="folders-list"></div>
     </div>
   </div>
 </div>
@@ -153,104 +166,106 @@ select, input[type="number"] { width: 70px; padding: 0.4rem; border-radius: 6px;
 </div>
 
 <script>
-// --- BASE DE DONNÉES AVEC TEMPS ESTIMÉ ---
+// --- BASE DE DONNÉES AVEC UNITÉS ---
 const defaultDatabase = {
   "⚡ Éclairage Intérieur": {
-    "Spot encastré LED": { price: 45, time: 0.5 },
-    "Spot en saillie": { price: 50, time: 0.5 },
-    "Spot orientable": { price: 55, time: 0.5 },
-    "Plafonnier": { price: 65, time: 0.7 },
-    "Suspension": { price: 75, time: 0.7 },
-    "Applique murale": { price: 55, time: 0.5 },
-    "Réglette LED garage": { price: 45, time: 0.4 },
-    "Ruban LED (ml)": { price: 25, time: 0.1 },
-    "Profilé Alu pour LED": { price: 30, time: 0.1 },
-    "Variateur de lumière": { price: 50, time: 0.2 },
-    "Détecteur de présence": { price: 95, time: 0.3 },
-    "Transformateur LED": { price: 35, time: 0.2 }
+    "Spot encastré LED": { price: 45, time: 0.5, unit: "u" },
+    "Spot en saillie": { price: 50, time: 0.5, unit: "u" },
+    "Spot orientable": { price: 55, time: 0.5, unit: "u" },
+    "Plafonnier": { price: 65, time: 0.7, unit: "u" },
+    "Suspension": { price: 75, time: 0.7, unit: "u" },
+    "Applique murale": { price: 55, time: 0.5, unit: "u" },
+    "Réglette LED garage": { price: 45, time: 0.4, unit: "u" },
+    "Ruban LED (ml)": { price: 25, time: 0.1, unit: "m" },
+    "Profilé Alu pour LED": { price: 30, time: 0.1, unit: "m" },
+    "Variateur de lumière": { price: 50, time: 0.2, unit: "u" },
+    "Détecteur de présence": { price: 95, time: 0.3, unit: "u" },
+    "Transformateur LED": { price: 35, time: 0.2, unit: "u" }
   },
   "🔌 Prises & Interrupteurs": {
-    "Prise de courant 16A": { price: 35, time: 0.2 },
-    "Prise étanche IP55": { price: 45, time: 0.25 },
-    "Prise USB (A+C)": { price: 60, time: 0.25 },
-    "Prise RJ45 Cat6": { price: 65, time: 0.3 },
-    "Prise TV / Satellite": { price: 45, time: 0.2 },
-    "Interrupteur simple": { price: 25, time: 0.15 },
-    "Va-et-vient": { price: 35, time: 0.2 },
-    "Bouton poussoir": { price: 32, time: 0.15 },
-    "Double va-et-vient": { price: 45, time: 0.25 },
-    "Sortie de câble": { price: 20, time: 0.1 }
+    "Prise de courant 16A": { price: 35, time: 0.2, unit: "u" },
+    "Prise étanche IP55": { price: 45, time: 0.25, unit: "u" },
+    "Prise USB (A+C)": { price: 60, time: 0.25, unit: "u" },
+    "Prise RJ45 Cat6": { price: 65, time: 0.3, unit: "u" },
+    "Prise TV / Satellite": { price: 45, time: 0.2, unit: "u" },
+    "Interrupteur simple": { price: 25, time: 0.15, unit: "u" },
+    "Va-et-vient": { price: 35, time: 0.2, unit: "u" },
+    "Bouton poussoir": { price: 32, time: 0.15, unit: "u" },
+    "Double va-et-vient": { price: 45, time: 0.25, unit: "u" },
+    "Sortie de câble": { price: 20, time: 0.1, unit: "u" }
   },
   "🧯 Câblage & Cheminement": {
-    "Câble 3G1.5 (ml)": { price: 3, time: 0.01 },
-    "Câble 3G2.5 (ml)": { price: 4, time: 0.01 },
-    "Câble RJ45 (ml)": { price: 4.5, time: 0.01 },
-    "Gaine ICTA Ø20 (ml)": { price: 2.5, time: 0.01 },
-    "Gaine ICTA Ø25 (ml)": { price: 3, time: 0.01 },
-    "Goulotte 20x12 (ml)": { price: 12, time: 0.02 },
-    "Goulotte 40x20 (ml)": { price: 18, time: 0.02 },
-    "Boîte de dérivation": { price: 15, time: 0.1 }
+    "Câble 3G1.5 (ml)": { price: 3, time: 0.01, unit: "m" },
+    "Câble 3G2.5 (ml)": { price: 4, time: 0.01, unit: "m" },
+    "Câble RJ45 (ml)": { price: 4.5, time: 0.01, unit: "m" },
+    "Gaine ICTA Ø20 (ml)": { price: 2.5, time: 0.01, unit: "m" },
+    "Gaine ICTA Ø25 (ml)": { price: 3, time: 0.01, unit: "m" },
+    "Goulotte 20x12 (ml)": { price: 12, time: 0.02, unit: "m" },
+    "Goulotte 40x20 (ml)": { price: 18, time: 0.02, unit: "m" },
+    "Boîte de dérivation": { price: 15, time: 0.1, unit: "u" }
   },
   "📦 Tableaux & Protections": {
-    "Tableau électrique nu": { price: 150, time: 1.5 },
-    "Disjoncteur 10A/16A": { price: 25, time: 0.15 },
-    "Disjoncteur 20A/32A": { price: 35, time: 0.15 },
-    "Interrupteur Différentiel 40A": { price: 95, time: 0.2 },
-    "Interrupteur Différentiel 63A": { price: 130, time: 0.2 },
-    "Disjoncteur différentiel": { price: 115, time: 0.2 },
-    "Parafoudre": { price: 170, time: 0.3 },
-    "Contacteur Jour/Nuit": { price: 85, time: 0.2 },
-    "Télérupteur": { price: 70, time: 0.2 },
-    "Bornier de terre": { price: 15, time: 0.05 }
+    "Tableau électrique nu": { price: 150, time: 1.5, unit: "u" },
+    "Disjoncteur 10A/16A": { price: 25, time: 0.15, unit: "u" },
+    "Disjoncteur 20A/32A": { price: 35, time: 0.15, unit: "u" },
+    "Interrupteur Différentiel 40A": { price: 95, time: 0.2, unit: "u" },
+    "Interrupteur Différentiel 63A": { price: 130, time: 0.2, unit: "u" },
+    "Disjoncteur différentiel": { price: 115, time: 0.2, unit: "u" },
+    "Parafoudre": { price: 170, time: 0.3, unit: "u" },
+    "Contacteur Jour/Nuit": { price: 85, time: 0.2, unit: "u" },
+    "Télérupteur": { price: 70, time: 0.2, unit: "u" },
+    "Bornier de terre": { price: 15, time: 0.05, unit: "u" }
   },
   "🏠 Domotique & Connecté": {
-    "Micromodule volet roulant": { price: 85, time: 0.3 },
-    "Micromodule éclairage": { price: 80, time: 0.3 },
-    "Pack démarrage connecté": { price: 180, time: 0.5 },
-    "Thermostat connecté": { price: 230, time: 0.5 },
-    "Capteur ouverture fenêtre": { price: 55, time: 0.1 },
-    "Passerelle Wifi/Zigbee": { price: 110, time: 0.2 }
+    "Micromodule volet roulant": { price: 85, time: 0.3, unit: "u" },
+    "Micromodule éclairage": { price: 80, time: 0.3, unit: "u" },
+    "Pack démarrage connecté": { price: 180, time: 0.5, unit: "u" },
+    "Thermostat connecté": { price: 230, time: 0.5, unit: "u" },
+    "Capteur ouverture fenêtre": { price: 55, time: 0.1, unit: "u" },
+    "Passerelle Wifi/Zigbee": { price: 110, time: 0.2, unit: "u" }
   },
   "🚪 Ouvertures Automatisées": {
-    "Moteur volet roulant": { price: 290, time: 1 },
-    "Motorisation portail battant": { price: 980, time: 3 },
-    "Motorisation portail coulissant": { price: 1100, time: 3 },
-    "Cellule de sécurité": { price: 90, time: 0.2 },
-    "Feu clignotant orange": { price: 75, time: 0.1 },
-    "Antenne déportée": { price: 45, time: 0.1 }
+    "Moteur volet roulant": { price: 290, time: 1, unit: "u" },
+    "Motorisation portail battant": { price: 980, time: 3, unit: "u" },
+    "Motorisation portail coulissant": { price: 1100, time: 3, unit: "u" },
+    "Cellule de sécurité": { price: 90, time: 0.2, unit: "u" },
+    "Feu clignotant orange": { price: 75, time: 0.1, unit: "u" },
+    "Antenne déportée": { price: 45, time: 0.1, unit: "u" }
   },
   "🔥 Chauffage & Ventilation": {
-    "Radiateur à inertie 1000W": { price: 390, time: 1 },
-    "Radiateur à inertie 2000W": { price: 550, time: 1.2 },
-    "Sèche-serviette": { price: 450, time: 1 },
-    "VMC simple flux": { price: 550, time: 2 },
-    "VMC double flux": { price: 2900, time: 6 },
-    "Extracteur ponctuel": { price: 130, time: 0.3 },
-    "Bouche d'extraction": { price: 35, time: 0.05 }
+    "Radiateur à inertie 1000W": { price: 390, time: 1, unit: "u" },
+    "Radiateur à inertie 2000W": { price: 550, time: 1.2, unit: "u" },
+    "Sèche-serviette": { price: 450, time: 1, unit: "u" },
+    "VMC simple flux": { price: 550, time: 2, unit: "u" },
+    "VMC double flux": { price: 2900, time: 6, unit: "u" },
+    "Extracteur ponctuel": { price: 130, time: 0.3, unit: "u" },
+    "Bouche d'extraction": { price: 35, time: 0.05, unit: "u" }
   },
   "🔔 Sécurité & Communication": {
-    "Centrale Alarme": { price: 550, time: 1 },
-    "Sirène extérieure": { price: 180, time: 0.2 },
-    "Détecteur fumée": { price: 45, time: 0.1 },
-    "Visiophone connecté": { price: 490, time: 1 },
-    "Interphone audio": { price: 260, time: 0.5 },
-    "Caméra IP extérieure": { price: 350, time: 0.5 },
-    "Baie de brassage": { price: 420, time: 1 }
+    "Centrale Alarme": { price: 550, time: 1, unit: "u" },
+    "Sirène extérieure": { price: 180, time: 0.2, unit: "u" },
+    "Détecteur fumée": { price: 45, time: 0.1, unit: "u" },
+    "Visiophone connecté": { price: 490, time: 1, unit: "u" },
+    "Interphone audio": { price: 260, time: 0.5, unit: "u" },
+    "Caméra IP extérieure": { price: 350, time: 0.5, unit: "u" },
+    "Baie de brassage": { price: 420, time: 1, unit: "u" }
   },
   "🧰 Prestations & Main d'œuvre": {
-    "Heure de main d'œuvre": { price: 55, time: 1 },
-    "Forfait déplacement": { price: 50, time: 0 },
-    "Mise en conformité tableau": { price: 850, time: 3 },
-    "Saignée dans béton (ml)": { price: 40, time: 0.1 },
-    "Recherche de panne": { price: 90, time: 1 },
-    "Consuel (frais + dossier)": { price: 250, time: 0 }
+    "Heure de main d'œuvre": { price: 55, time: 1, unit: "h" },
+    "Forfait déplacement": { price: 50, time: 0, unit: "u" },
+    "Mise en conformité tableau": { price: 850, time: 3, unit: "u" },
+    "Saignée dans béton (ml)": { price: 40, time: 0.1, unit: "m" },
+    "Recherche de panne": { price: 90, time: 1, unit: "u" },
+    "Consuel (frais + dossier)": { price: 250, time: 0, unit: "u" }
   }
 };
 
-let database = JSON.parse(localStorage.getItem('zelio_full_v5')) || defaultDatabase;
+let database = JSON.parse(localStorage.getItem('zelio_full_v6')) || defaultDatabase;
 let photos = JSON.parse(localStorage.getItem('zelio_photos')) || [];
 let favorites = JSON.parse(localStorage.getItem('zelio_favorites')) || [];
 let clients = JSON.parse(localStorage.getItem('zelio_clients')) || [];
+let folders = JSON.parse(localStorage.getItem('zelio_folders')) || [];
+let formData = JSON.parse(localStorage.getItem('zelio_formdata')) || {};
 
 // --- NAVIGATION ---
 function showPage(id, event) {
@@ -261,16 +276,18 @@ function showPage(id, event) {
   if(id === 'favorites') renderFavorites();
   if(id === 'clients') renderClients();
   if(id === 'export') document.getElementById('import-file').value = '';
+  if(id === 'folders') renderFolders();
 }
 
 // --- ACCORDÉON ---
 function toggleAccordion(header) { header.parentElement.classList.toggle('open'); }
 function toggleAll(show) { document.querySelectorAll('.accordion-item').forEach(item => show ? item.classList.add('open') : item.classList.remove('open')); }
-function resetQuantities() { if(confirm("Réinitialiser toutes les quantités à 0 ?")) { document.querySelectorAll('.qty-in').forEach(s => s.value = 0); calculate(); } }
+function resetQuantities() { if(confirm("Réinitialiser toutes les quantités à 0 ?")) { document.querySelectorAll('.qty-in').forEach(s => s.value = 0); calculate(); saveFormData(); } }
 function fullReset() { if(confirm("Voulez-vous supprimer tous vos prix personnalisés et revenir à la liste d'origine ?")) { localStorage.clear(); location.reload(); } }
 
 // --- FAVORIS ---
-function toggleFavorite(cat, prod) {
+function toggleFavorite(cat, prod, e) {
+  if(e) e.stopPropagation();
   const key = cat + '||' + prod;
   if(favorites.includes(key)) favorites = favorites.filter(f => f !== key);
   else favorites.push(key);
@@ -286,9 +303,9 @@ function renderFavorites() {
     if(database[cat] && database[cat][prod]) {
       favDiv.innerHTML += `
         <div class="item">
-          <label>${cat} - <b>${prod}</b></label>
+          <label>${cat} - <b>${prod}</b> <span style="color:#64748b;font-size:0.8em;">(${database[cat][prod].unit})</span></label>
           <span>${database[cat][prod].price}€</span>
-          <button class="btn-small btn-danger" onclick="toggleFavorite('${cat.replace(/'/g,"\\'")}', '${prod.replace(/'/g,"\\'")}')">Retirer</button>
+          <button class="btn-small btn-danger" onclick="toggleFavorite('${cat.replace(/'/g,"\\'")}', '${prod.replace(/'/g,"\\'")}', event)">Retirer</button>
         </div>
       `;
     }
@@ -333,6 +350,7 @@ document.getElementById('client-select').addEventListener('change', function() {
     document.getElementById('c-site').value = "";
     document.getElementById('c-type').value = "";
     document.getElementById('c-notes').value = "";
+    saveFormData();
     return;
   }
   const c = clients[idx];
@@ -343,6 +361,7 @@ document.getElementById('client-select').addEventListener('change', function() {
   document.getElementById('c-site').value = c.site;
   document.getElementById('c-type').value = c.type;
   document.getElementById('c-notes').value = c.notes;
+  saveFormData();
 });
 function renderClients() {
   const clDiv = document.getElementById('clients-list');
@@ -399,6 +418,37 @@ function removePhoto(idx) {
 }
 showPhotoPreview();
 
+// --- PRENDRE UNE PHOTO DIRECTEMENT ---
+function takePhoto() {
+  const video = document.getElementById('camera-stream');
+  const captureBtn = document.getElementById('capture-btn');
+  video.style.display = 'block';
+  captureBtn.style.display = 'inline-block';
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+    .then(stream => {
+      video.srcObject = stream;
+      captureBtn.onclick = function() {
+        const canvas = document.getElementById('photo-canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext('2d').drawImage(video, 0, 0);
+        const dataUrl = canvas.toDataURL('image/jpeg');
+        photos.push(dataUrl);
+        localStorage.setItem('zelio_photos', JSON.stringify(photos));
+        showPhotoPreview();
+        // Stop camera
+        stream.getTracks().forEach(track => track.stop());
+        video.style.display = 'none';
+        captureBtn.style.display = 'none';
+      };
+    })
+    .catch(() => {
+      alert("Impossible d'accéder à la caméra.");
+      video.style.display = 'none';
+      captureBtn.style.display = 'none';
+    });
+}
+
 // --- RENDU DYNAMIQUE ---
 function render() {
   const configA = document.getElementById('config-accordion');
@@ -412,19 +462,29 @@ function render() {
       const favKey = cat + '||' + name;
       document.getElementById(`c-${catId}`).innerHTML += `
         <div class="item">
-          <button class="favorite-btn${favorites.includes(favKey) ? ' fav' : ''}" title="Ajouter/Retirer des favoris" onclick="toggleFavorite('${cat.replace(/'/g,"\\'")}', '${name.replace(/'/g,"\\'")}')">${favorites.includes(favKey) ? '★' : '☆'}</button>
-          <label>${name} <span style="color:#64748b;font-size:0.8em;">(${obj.time}h)</span></label>
+          <button class="favorite-btn${favorites.includes(favKey) ? ' fav' : ''}" title="Ajouter/Retirer des favoris" onclick="toggleFavorite('${cat.replace(/'/g,"\\'")}', '${name.replace(/'/g,"\\'")}', event); return false;">${favorites.includes(favKey) ? '★' : '☆'}</button>
+          <label>${name} <span style="color:#64748b;font-size:0.8em;">(${obj.unit})</span> <span style="color:#64748b;font-size:0.8em;">${obj.time}h</span></label>
           <select class="qty-in" data-cat="${cat}" data-prod="${name}">${Array.from({length:101},(_,i)=>`<option value="${i}">${i}</option>`).join('')}</select>
         </div>`;
       document.getElementById(`p-${catId}`).innerHTML += `
         <div class="item">
-          <label>${name} <span style="color:#64748b;font-size:0.8em;">(${obj.time}h)</span></label>
+          <label>${name} <span style="color:#64748b;font-size:0.8em;">(${obj.unit})</span> <span style="color:#64748b;font-size:0.8em;">${obj.time}h</span></label>
           <input type="number" value="${obj.price}" class="price-in" data-cat="${cat}" data-prod="${name}">
           <input type="number" value="${obj.time}" step="0.01" class="time-in" data-cat="${cat}" data-prod="${name}" style="width:60px;" title="Durée estimée (h)">
         </div>`;
     }
   }
-  document.querySelectorAll('.qty-in, .price-in, .time-in').forEach(el => el.addEventListener('input', calculate));
+  document.querySelectorAll('.qty-in, .price-in, .time-in').forEach(el => el.addEventListener('input', function() {
+    calculate();
+    saveFormData();
+  }));
+  // Recharge les quantités sauvegardées
+  if(formData.quantities) {
+    document.querySelectorAll('.qty-in').forEach(s => {
+      const key = s.dataset.cat + '||' + s.dataset.prod;
+      if(formData.quantities[key] !== undefined) s.value = formData.quantities[key];
+    });
+  }
 }
 render();
 
@@ -437,7 +497,7 @@ function calculate() {
   document.querySelectorAll('.time-in').forEach(i => { 
     database[i.dataset.cat][i.dataset.prod].time = parseFloat(i.value) || 0; 
   });
-  localStorage.setItem('zelio_full_v5', JSON.stringify(database));
+  localStorage.setItem('zelio_full_v6', JSON.stringify(database));
   document.querySelectorAll('.qty-in').forEach(s => { 
     const q = parseInt(s.value);
     const obj = database[s.dataset.cat][s.dataset.prod];
@@ -449,16 +509,59 @@ function calculate() {
 }
 calculate();
 
-// --- PDF DEVIS ---
+// --- SAUVEGARDE AUTOMATIQUE DES FORMULAIRES ---
+function saveFormData() {
+  formData = {
+    c_name: document.getElementById('c-name').value,
+    c_phone: document.getElementById('c-phone').value,
+    c_email: document.getElementById('c-email').value,
+    c_addr: document.getElementById('c-addr').value,
+    c_site: document.getElementById('c-site').value,
+    c_type: document.getElementById('c-type').value,
+    c_notes: document.getElementById('c-notes').value,
+    my_name: document.getElementById('my-name').value,
+    my_siret: document.getElementById('my-siret').value,
+    my_addr: document.getElementById('my-addr').value,
+    my_ins: document.getElementById('my-ins').value,
+    quantities: {}
+  };
+  document.querySelectorAll('.qty-in').forEach(s => {
+    const key = s.dataset.cat + '||' + s.dataset.prod;
+    formData.quantities[key] = s.value;
+  });
+  localStorage.setItem('zelio_formdata', JSON.stringify(formData));
+}
+function loadFormData() {
+  if(!formData) return;
+  document.getElementById('c-name').value = formData.c_name || "";
+  document.getElementById('c-phone').value = formData.c_phone || "";
+  document.getElementById('c-email').value = formData.c_email || "";
+  document.getElementById('c-addr').value = formData.c_addr || "";
+  document.getElementById('c-site').value = formData.c_site || "";
+  document.getElementById('c-type').value = formData.c_type || "";
+  document.getElementById('c-notes').value = formData.c_notes || "";
+  document.getElementById('my-name').value = formData.my_name || "";
+  document.getElementById('my-siret').value = formData.my_siret || "";
+  document.getElementById('my-addr').value = formData.my_addr || "";
+  document.getElementById('my-ins').value = formData.my_ins || "";
+  // Les quantités sont rechargées dans render()
+}
+loadFormData();
+document.querySelectorAll('#c-name,#c-phone,#c-email,#c-addr,#c-site,#c-type,#c-notes,#my-name,#my-siret,#my-addr,#my-ins').forEach(el => {
+  el.addEventListener('input', function() { saveFormData(); });
+});
+
+// --- PDF DEVIS (avec DOM pour mobile) ---
 function generatePDF() {
-  const c = { name: document.getElementById('c-name').value, phone: document.getElementById('c-phone').value, email: document.getElementById('c-email').value, addr: document.getElementById('c-addr').value, site: document.getElementById('c-site').value, type: document.getElementById('c-type').value, notes: document.getElementById('c-notes').value };
-  const m = { name: document.getElementById('my-name').value, siret: document.getElementById('my-siret').value, addr: document.getElementById('my-addr').value, ins: document.getElementById('my-ins').value };
+  saveFolder();
+  const c = getClientData();
+  const m = getArtisanData();
   let rows = "", totalTime = 0;
   document.querySelectorAll('.qty-in').forEach(s => {
     const q = parseInt(s.value);
     if(q > 0) {
       const obj = database[s.dataset.cat][s.dataset.prod];
-      rows += `<tr><td style="padding:10px; border-bottom:1px solid #eee;">${s.dataset.prod}</td><td style="text-align:center; border-bottom:1px solid #eee;">${q}</td><td style="text-align:right; border-bottom:1px solid #eee;">${obj.price}€</td><td style="text-align:right; border-bottom:1px solid #eee;">${q*obj.price}€</td></tr>`;
+      rows += `<tr><td style="padding:10px; border-bottom:1px solid #eee;">${s.dataset.prod} <span style='color:#64748b;font-size:0.8em;'>(${obj.unit})</span></td><td style="text-align:center; border-bottom:1px solid #eee;">${q}</td><td style="text-align:right; border-bottom:1px solid #eee;">${obj.price}€</td><td style="text-align:right; border-bottom:1px solid #eee;">${q*obj.price}€</td></tr>`;
       totalTime += q * obj.time;
     }
   });
@@ -498,19 +601,24 @@ function generatePDF() {
         <p style="margin-top:20px;">Bon pour accord le : ____ / ____ / 20____ &nbsp;&nbsp;&nbsp; Cachet et Signature :</p>
     </div>
   `;
-  html2pdf().from(element).set({ margin: 0.5, filename: `Devis_ZELIO_${c.name}.pdf`, html2canvas: { scale: 2 } }).save();
+  element.style.display = "none";
+  document.body.appendChild(element);
+  html2pdf().from(element).set({ margin: 0.5, filename: `Devis_ZELIO_${c.name}.pdf`, html2canvas: { scale: 2 } }).save().then(() => {
+    document.body.removeChild(element);
+  });
 }
 
-// --- PDF RAPPORT ---
+// --- PDF RAPPORT (avec DOM pour mobile) ---
 function generateReport() {
-  const c = { name: document.getElementById('c-name').value, phone: document.getElementById('c-phone').value, email: document.getElementById('c-email').value, addr: document.getElementById('c-addr').value, site: document.getElementById('c-site').value, type: document.getElementById('c-type').value, notes: document.getElementById('c-notes').value };
-  const m = { name: document.getElementById('my-name').value, siret: document.getElementById('my-siret').value, addr: document.getElementById('my-addr').value, ins: document.getElementById('my-ins').value };
+  saveFolder();
+  const c = getClientData();
+  const m = getArtisanData();
   let rows = "", totalTime = 0;
   document.querySelectorAll('.qty-in').forEach(s => {
     const q = parseInt(s.value);
     if(q > 0) {
       const obj = database[s.dataset.cat][s.dataset.prod];
-      rows += `<tr><td style="padding:10px; border-bottom:1px solid #eee;">${s.dataset.prod}</td><td style="text-align:center; border-bottom:1px solid #eee;">${q}</td><td style="text-align:right; border-bottom:1px solid #eee;">${obj.price}€</td><td style="text-align:right; border-bottom:1px solid #eee;">${q*obj.price}€</td></tr>`;
+      rows += `<tr><td style="padding:10px; border-bottom:1px solid #eee;">${s.dataset.prod} <span style='color:#64748b;font-size:0.8em;'>(${obj.unit})</span></td><td style="text-align:center; border-bottom:1px solid #eee;">${q}</td><td style="text-align:right; border-bottom:1px solid #eee;">${obj.price}€</td><td style="text-align:right; border-bottom:1px solid #eee;">${q*obj.price}€</td></tr>`;
       totalTime += q * obj.time;
     }
   });
@@ -558,13 +666,108 @@ function generateReport() {
         <p style="margin-top:20px;">Signature du client :</p>
     </div>
   `;
-  html2pdf().from(element).set({ margin: 0.5, filename: `Rapport_ZELIO_${c.name}.pdf`, html2canvas: { scale: 2 } }).save();
+  element.style.display = "none";
+  document.body.appendChild(element);
+  html2pdf().from(element).set({ margin: 0.5, filename: `Rapport_ZELIO_${c.name}.pdf`, html2canvas: { scale: 2 } }).save().then(() => {
+    document.body.removeChild(element);
+  });
+}
+
+// --- DOSSIERS CLIENTS (SAUVEGARDE) ---
+function saveFolder() {
+  const c = getClientData();
+  const m = getArtisanData();
+  let quantities = {};
+  document.querySelectorAll('.qty-in').forEach(s => {
+    const key = s.dataset.cat + '||' + s.dataset.prod;
+    quantities[key] = s.value;
+  });
+  const folder = {
+    client: c,
+    artisan: m,
+    quantities,
+    photos: [...photos],
+    date: new Date().toISOString()
+  };
+  // Unicité par nom client + date
+  let idx = folders.findIndex(f => f.client.name === c.name && f.client.addr === c.addr);
+  if(idx !== -1) folders[idx] = folder;
+  else folders.push(folder);
+  localStorage.setItem('zelio_folders', JSON.stringify(folders));
+}
+function renderFolders() {
+  const fDiv = document.getElementById('folders-list');
+  fDiv.innerHTML = '';
+  if(!folders.length) { fDiv.innerHTML = "<p style='color:#888;'>Aucun dossier sauvegardé.</p>"; return; }
+  folders.forEach((f, i) => {
+    fDiv.innerHTML += `
+      <div class="item">
+        <label><b>${f.client.name}</b> - ${f.client.addr} <span style="color:#64748b;font-size:0.8em;">(${new Date(f.date).toLocaleDateString()})</span></label>
+        <button class="btn-small" onclick="loadFolder(${i})">Charger</button>
+        <button class="btn-small btn-danger" onclick="deleteFolder(${i})">Supprimer</button>
+      </div>
+    `;
+  });
+}
+function loadFolder(idx) {
+  const f = folders[idx];
+  document.getElementById('c-name').value = f.client.name;
+  document.getElementById('c-phone').value = f.client.phone;
+  document.getElementById('c-email').value = f.client.email;
+  document.getElementById('c-addr').value = f.client.addr;
+  document.getElementById('c-site').value = f.client.site;
+  document.getElementById('c-type').value = f.client.type;
+  document.getElementById('c-notes').value = f.client.notes;
+  document.getElementById('my-name').value = f.artisan.name;
+  document.getElementById('my-siret').value = f.artisan.siret;
+  document.getElementById('my-addr').value = f.artisan.addr;
+  document.getElementById('my-ins').value = f.artisan.ins;
+  // Quantités
+  document.querySelectorAll('.qty-in').forEach(s => {
+    const key = s.dataset.cat + '||' + s.dataset.prod;
+    s.value = f.quantities[key] || 0;
+  });
+  // Photos
+  photos = [...f.photos];
+  localStorage.setItem('zelio_photos', JSON.stringify(photos));
+  showPhotoPreview();
+  calculate();
+  saveFormData();
+  alert("Dossier chargé !");
+}
+function deleteFolder(idx) {
+  if(confirm("Supprimer ce dossier ?")) {
+    folders.splice(idx,1);
+    localStorage.setItem('zelio_folders', JSON.stringify(folders));
+    renderFolders();
+  }
+}
+
+// --- OUTILS ---
+function getClientData() {
+  return {
+    name: document.getElementById('c-name').value,
+    phone: document.getElementById('c-phone').value,
+    email: document.getElementById('c-email').value,
+    addr: document.getElementById('c-addr').value,
+    site: document.getElementById('c-site').value,
+    type: document.getElementById('c-type').value,
+    notes: document.getElementById('c-notes').value
+  };
+}
+function getArtisanData() {
+  return {
+    name: document.getElementById('my-name').value,
+    siret: document.getElementById('my-siret').value,
+    addr: document.getElementById('my-addr').value,
+    ins: document.getElementById('my-ins').value
+  };
 }
 
 // --- EXPORT/IMPORT ---
 function exportData() {
   const data = {
-    database, photos, favorites, clients
+    database, photos, favorites, clients, folders, formData
   };
   const blob = new Blob([JSON.stringify(data)], {type: "application/json"});
   const url = URL.createObjectURL(blob);
@@ -585,10 +788,14 @@ document.getElementById('import-file').addEventListener('change', function(e) {
       if(data.photos) photos = data.photos;
       if(data.favorites) favorites = data.favorites;
       if(data.clients) clients = data.clients;
-      localStorage.setItem('zelio_full_v5', JSON.stringify(database));
+      if(data.folders) folders = data.folders;
+      if(data.formData) formData = data.formData;
+      localStorage.setItem('zelio_full_v6', JSON.stringify(database));
       localStorage.setItem('zelio_photos', JSON.stringify(photos));
       localStorage.setItem('zelio_favorites', JSON.stringify(favorites));
       localStorage.setItem('zelio_clients', JSON.stringify(clients));
+      localStorage.setItem('zelio_folders', JSON.stringify(folders));
+      localStorage.setItem('zelio_formdata', JSON.stringify(formData));
       alert("Importation réussie !");
       location.reload();
     } catch(e) { alert("Fichier invalide."); }
