@@ -8,34 +8,25 @@
 <style>
 :root { --primary: #4f46e5; --bg: #f1f5f9; --card: #ffffff; --text: #1f2937; --accent: #10b981; }
 * { box-sizing: border-box; }
-body { margin: 0; font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); padding-bottom: 140px; }
-
-/* Header & Logo */
+body { margin: 0; font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); padding-bottom: 160px; }
 .header-brand { background: white; padding: 1.5rem; text-align: center; border-bottom: 1px solid #e2e8f0; }
 .logo-text { font-size: 2.5rem; font-weight: 900; color: var(--primary); letter-spacing: -2px; margin: 0; }
 .logo-subtitle { font-size: 0.8rem; color: #64748b; text-transform: uppercase; letter-spacing: 2px; margin-top: -5px; }
-
-/* Navigation */
 .nav-tabs { display: flex; justify-content: center; gap: 10px; background: white; padding: 0.8rem; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
 .tab-btn { padding: 0.7rem 1.1rem; border: none; background: #e2e8f0; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.9rem; }
 .tab-btn.active { background: var(--primary); color: white; }
-
 .container { max-width: 1100px; margin: auto; padding: 1rem; }
 .page { display: none; }
 .page.active { display: block; }
-
-/* Formulaires */
 .form-section { background: white; padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; border: 1px solid #e2e8f0; }
 .form-section h2 { margin-top: 0; font-size: 1.1rem; color: var(--primary); margin-bottom: 1rem; }
 .grid-forms { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; }
 .form-group label { display: block; font-size: 0.75rem; font-weight: bold; margin-bottom: 4px; color: #64748b; }
-input.full-width { width: 100%; padding: 0.7rem; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.9rem; }
-
-/* Accordéon */
+input.full-width, textarea.full-width, select.full-width { width: 100%; padding: 0.7rem; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.9rem; }
+textarea.full-width { resize: vertical; }
 .accordion-controls { display: flex; justify-content: center; gap: 10px; margin-bottom: 1rem; }
 .btn-small { padding: 6px 12px; font-size: 0.75rem; background: #cbd5e1; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
 .btn-danger { background: #fee2e2; color: #ef4444; }
-
 .accordion-item { background: var(--card); border-radius: 12px; margin-bottom: 0.6rem; overflow: hidden; border: 1px solid #e2e8f0; }
 .accordion-header { width: 100%; padding: 1.1rem; background: white; border: none; display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-weight: bold; text-align: left; }
 .accordion-header::after { content: '+'; color: var(--primary); font-size: 1.2rem; }
@@ -43,16 +34,20 @@ input.full-width { width: 100%; padding: 0.7rem; border-radius: 8px; border: 1px
 .accordion-item.open .accordion-header::after { content: '-'; }
 .accordion-content { display: none; padding: 1rem; background: #fafafa; }
 .accordion-item.open .accordion-content { display: block; }
-
 .grid-items { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 0.7rem; }
-.item { display: flex; align-items: center; justify-content: space-between; background: white; padding: 0.6rem 0.9rem; border-radius: 8px; border: 1px solid #e2e8f0; }
+.item { display: flex; align-items: center; justify-content: space-between; background: white; padding: 0.6rem 0.9rem; border-radius: 8px; border: 1px solid #e2e8f0; position:relative;}
 .item label { font-size: 0.85rem; flex: 1; margin-right: 10px; }
 select, input[type="number"] { width: 70px; padding: 0.4rem; border-radius: 6px; border: 1px solid #cbd5e1; }
-
-/* Footer */
-.footer { position: fixed; bottom: 0; width: 100%; background: white; padding: 1rem; display: flex; justify-content: space-around; align-items: center; box-shadow: 0 -5px 15px rgba(0,0,0,0.1); z-index: 1001; }
+.favorite-btn { background: none; border: none; cursor: pointer; font-size: 1.2rem; color: #eab308; margin-right: 6px; }
+.favorite-btn.fav { color: #f59e42; }
+.footer { position: fixed; bottom: 0; width: 100%; background: white; padding: 1rem; display: flex; justify-content: space-around; align-items: center; box-shadow: 0 -5px 15px rgba(0,0,0,0.1); z-index: 1001; flex-wrap:wrap;}
 .total-amount { font-size: 1.5rem; font-weight: 800; color: var(--primary); }
-.btn-generate { background: var(--primary); color: white; padding: 0.9rem 2rem; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; }
+.btn-generate { background: var(--primary); color: white; padding: 0.9rem 2rem; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; margin: 0 5px;}
+.footer-info { font-size: 1rem; color: #64748b; margin: 0 10px;}
+@media (max-width: 700px) {
+  .footer { flex-direction: column; gap: 10px; }
+  .btn-generate { width: 100%; }
+}
 </style>
 </head>
 <body>
@@ -63,33 +58,52 @@ select, input[type="number"] { width: 70px; padding: 0.4rem; border-radius: 6px;
 </div>
 
 <div class="nav-tabs">
-  <button class="tab-btn active" onclick="showPage('config')">📋 Devis</button>
-  <button class="tab-btn" onclick="showPage('prices')">⚙️ Paramètres</button>
+  <button class="tab-btn active" onclick="showPage('config', event)">📋 Devis</button>
+  <button class="tab-btn" onclick="showPage('prices', event)">⚙️ Paramètres</button>
+  <button class="tab-btn" onclick="showPage('favorites', event)">⭐ Favoris</button>
+  <button class="tab-btn" onclick="showPage('clients', event)">👥 Clients</button>
+  <button class="tab-btn" onclick="showPage('export', event)">💾 Sauvegarde</button>
 </div>
 
 <div class="container">
+  <!-- PAGE DEVIS -->
   <div id="page-config" class="page active">
     <div class="form-section">
       <h2>👤 Informations Client & Chantier</h2>
       <div class="grid-forms">
+        <div class="form-group">
+          <label>Client enregistré</label>
+          <select id="client-select" class="full-width">
+            <option value="">-- Nouveau client --</option>
+          </select>
+        </div>
         <div class="form-group"><label>Nom du Client</label><input type="text" id="c-name" class="full-width" placeholder="Ex: Jean Dupont"></div>
         <div class="form-group"><label>Téléphone</label><input type="text" id="c-phone" class="full-width" placeholder="06 00 00 00 00"></div>
         <div class="form-group"><label>Email</label><input type="email" id="c-email" class="full-width" placeholder="client@email.com"></div>
         <div class="form-group"><label>Adresse de Facturation</label><input type="text" id="c-addr" class="full-width" placeholder="Adresse complète"></div>
         <div class="form-group"><label>Adresse du Chantier</label><input type="text" id="c-site" class="full-width" placeholder="Si différente"></div>
         <div class="form-group"><label>Type de bien</label><input type="text" id="c-type" class="full-width" placeholder="Ex: Maison T4"></div>
+        <div class="form-group" style="grid-column:1/-1;">
+          <label>Notes du chantier</label>
+          <textarea id="c-notes" class="full-width" placeholder="Ex : accès difficile, présence d’animaux, etc." style="min-height:60px;"></textarea>
+        </div>
       </div>
+      <button class="btn-small" onclick="saveClient()">💾 Enregistrer ce client</button>
     </div>
-    
+    <div class="form-section">
+      <h2>📸 Photos du Chantier</h2>
+      <input type="file" id="site-photos" accept="image/*" multiple style="margin-bottom:10px;">
+      <div id="photo-preview" style="display:flex; gap:10px; flex-wrap:wrap;"></div>
+    </div>
     <div class="accordion-controls">
         <button class="btn-small" onclick="toggleAll(true)">Tout ouvrir</button>
         <button class="btn-small" onclick="toggleAll(false)">Tout fermer</button>
         <button class="btn-small btn-danger" onclick="resetQuantities()">Vider le panier</button>
     </div>
-
     <div id="config-accordion"></div>
   </div>
 
+  <!-- PAGE PRIX -->
   <div id="page-prices" class="page">
     <div class="form-section">
         <h2>🛠️ Mes Informations Artisan</h2>
@@ -103,99 +117,352 @@ select, input[type="number"] { width: 70px; padding: 0.4rem; border-radius: 6px;
     </div>
     <div id="prices-accordion"></div>
   </div>
+
+  <!-- PAGE FAVORIS -->
+  <div id="page-favorites" class="page">
+    <div class="form-section">
+      <h2>⭐ Mes Prestations Favorites</h2>
+      <div id="favorites-list"></div>
+    </div>
+  </div>
+
+  <!-- PAGE CLIENTS -->
+  <div id="page-clients" class="page">
+    <div class="form-section">
+      <h2>👥 Mes Clients Enregistrés</h2>
+      <div id="clients-list"></div>
+    </div>
+  </div>
+
+  <!-- PAGE EXPORT -->
+  <div id="page-export" class="page">
+    <div class="form-section">
+      <h2>💾 Sauvegarde / Restauration</h2>
+      <button class="btn-small" onclick="exportData()">Exporter la base (JSON)</button>
+      <input type="file" id="import-file" accept=".json" style="margin-top:10px;">
+      <p style="font-size:0.9em; color:#64748b;">Exportez ou importez toutes vos données (produits, clients, photos, favoris, etc.)</p>
+    </div>
+  </div>
 </div>
 
 <div class="footer">
-  <div>Total HT : <span class="total-amount"><span id="grand-total">0</span>€</span></div>
+  <div class="footer-info">Total HT : <span class="total-amount"><span id="grand-total">0</span>€</span></div>
+  <div class="footer-info">Temps estimé : <span id="grand-time">0</span> h</div>
   <button class="btn-generate" onclick="generatePDF()">GÉNÉRER LE DEVIS</button>
+  <button class="btn-generate" style="background:#10b981;" onclick="generateReport()">GÉNÉRER LE RAPPORT</button>
 </div>
 
 <script>
+// --- BASE DE DONNÉES AVEC TEMPS ESTIMÉ ---
 const defaultDatabase = {
   "⚡ Éclairage Intérieur": {
-    "Spot encastré LED": 45, "Spot en saillie": 50, "Spot orientable": 55, "Plafonnier": 65, "Suspension": 75, "Applique murale": 55, "Réglette LED garage": 45, "Ruban LED (ml)": 25, "Profilé Alu pour LED": 30, "Variateur de lumière": 50, "Détecteur de présence": 95, "Transformateur LED": 35
+    "Spot encastré LED": { price: 45, time: 0.5 },
+    "Spot en saillie": { price: 50, time: 0.5 },
+    "Spot orientable": { price: 55, time: 0.5 },
+    "Plafonnier": { price: 65, time: 0.7 },
+    "Suspension": { price: 75, time: 0.7 },
+    "Applique murale": { price: 55, time: 0.5 },
+    "Réglette LED garage": { price: 45, time: 0.4 },
+    "Ruban LED (ml)": { price: 25, time: 0.1 },
+    "Profilé Alu pour LED": { price: 30, time: 0.1 },
+    "Variateur de lumière": { price: 50, time: 0.2 },
+    "Détecteur de présence": { price: 95, time: 0.3 },
+    "Transformateur LED": { price: 35, time: 0.2 }
   },
   "🔌 Prises & Interrupteurs": {
-    "Prise de courant 16A": 35, "Prise étanche IP55": 45, "Prise USB (A+C)": 60, "Prise RJ45 Cat6": 65, "Prise TV / Satellite": 45, "Interrupteur simple": 25, "Va-et-vient": 35, "Bouton poussoir": 32, "Double va-et-vient": 45, "Sortie de câble": 20
+    "Prise de courant 16A": { price: 35, time: 0.2 },
+    "Prise étanche IP55": { price: 45, time: 0.25 },
+    "Prise USB (A+C)": { price: 60, time: 0.25 },
+    "Prise RJ45 Cat6": { price: 65, time: 0.3 },
+    "Prise TV / Satellite": { price: 45, time: 0.2 },
+    "Interrupteur simple": { price: 25, time: 0.15 },
+    "Va-et-vient": { price: 35, time: 0.2 },
+    "Bouton poussoir": { price: 32, time: 0.15 },
+    "Double va-et-vient": { price: 45, time: 0.25 },
+    "Sortie de câble": { price: 20, time: 0.1 }
   },
   "🧯 Câblage & Cheminement": {
-    "Câble 3G1.5 (ml)": 3, "Câble 3G2.5 (ml)": 4, "Câble RJ45 (ml)": 4.5, "Gaine ICTA Ø20 (ml)": 2.5, "Gaine ICTA Ø25 (ml)": 3, "Goulotte 20x12 (ml)": 12, "Goulotte 40x20 (ml)": 18, "Boîte de dérivation": 15
+    "Câble 3G1.5 (ml)": { price: 3, time: 0.01 },
+    "Câble 3G2.5 (ml)": { price: 4, time: 0.01 },
+    "Câble RJ45 (ml)": { price: 4.5, time: 0.01 },
+    "Gaine ICTA Ø20 (ml)": { price: 2.5, time: 0.01 },
+    "Gaine ICTA Ø25 (ml)": { price: 3, time: 0.01 },
+    "Goulotte 20x12 (ml)": { price: 12, time: 0.02 },
+    "Goulotte 40x20 (ml)": { price: 18, time: 0.02 },
+    "Boîte de dérivation": { price: 15, time: 0.1 }
   },
   "📦 Tableaux & Protections": {
-    "Tableau électrique nu": 150, "Disjoncteur 10A/16A": 25, "Disjoncteur 20A/32A": 35, "Interrupteur Différentiel 40A": 95, "Interrupteur Différentiel 63A": 130, "Disjoncteur différentiel": 115, "Parafoudre": 170, "Contacteur Jour/Nuit": 85, "Télérupteur": 70, "Bornier de terre": 15
+    "Tableau électrique nu": { price: 150, time: 1.5 },
+    "Disjoncteur 10A/16A": { price: 25, time: 0.15 },
+    "Disjoncteur 20A/32A": { price: 35, time: 0.15 },
+    "Interrupteur Différentiel 40A": { price: 95, time: 0.2 },
+    "Interrupteur Différentiel 63A": { price: 130, time: 0.2 },
+    "Disjoncteur différentiel": { price: 115, time: 0.2 },
+    "Parafoudre": { price: 170, time: 0.3 },
+    "Contacteur Jour/Nuit": { price: 85, time: 0.2 },
+    "Télérupteur": { price: 70, time: 0.2 },
+    "Bornier de terre": { price: 15, time: 0.05 }
   },
   "🏠 Domotique & Connecté": {
-    "Micromodule volet roulant": 85, "Micromodule éclairage": 80, "Pack démarrage connecté": 180, "Thermostat connecté": 230, "Capteur ouverture fenêtre": 55, "Passerelle Wifi/Zigbee": 110
+    "Micromodule volet roulant": { price: 85, time: 0.3 },
+    "Micromodule éclairage": { price: 80, time: 0.3 },
+    "Pack démarrage connecté": { price: 180, time: 0.5 },
+    "Thermostat connecté": { price: 230, time: 0.5 },
+    "Capteur ouverture fenêtre": { price: 55, time: 0.1 },
+    "Passerelle Wifi/Zigbee": { price: 110, time: 0.2 }
   },
   "🚪 Ouvertures Automatisées": {
-    "Moteur volet roulant": 290, "Motorisation portail battant": 980, "Motorisation portail coulissant": 1100, "Cellule de sécurité": 90, "Feu clignotant orange": 75, "Antenne déportée": 45
+    "Moteur volet roulant": { price: 290, time: 1 },
+    "Motorisation portail battant": { price: 980, time: 3 },
+    "Motorisation portail coulissant": { price: 1100, time: 3 },
+    "Cellule de sécurité": { price: 90, time: 0.2 },
+    "Feu clignotant orange": { price: 75, time: 0.1 },
+    "Antenne déportée": { price: 45, time: 0.1 }
   },
   "🔥 Chauffage & Ventilation": {
-    "Radiateur à inertie 1000W": 390, "Radiateur à inertie 2000W": 550, "Sèche-serviette": 450, "VMC simple flux": 550, "VMC double flux": 2900, "Extracteur ponctuel": 130, "Bouche d'extraction": 35
+    "Radiateur à inertie 1000W": { price: 390, time: 1 },
+    "Radiateur à inertie 2000W": { price: 550, time: 1.2 },
+    "Sèche-serviette": { price: 450, time: 1 },
+    "VMC simple flux": { price: 550, time: 2 },
+    "VMC double flux": { price: 2900, time: 6 },
+    "Extracteur ponctuel": { price: 130, time: 0.3 },
+    "Bouche d'extraction": { price: 35, time: 0.05 }
   },
   "🔔 Sécurité & Communication": {
-    "Centrale Alarme": 550, "Sirène extérieure": 180, "Détecteur fumée": 45, "Visiophone connecté": 490, "Interphone audio": 260, "Caméra IP extérieure": 350, "Baie de brassage": 420
+    "Centrale Alarme": { price: 550, time: 1 },
+    "Sirène extérieure": { price: 180, time: 0.2 },
+    "Détecteur fumée": { price: 45, time: 0.1 },
+    "Visiophone connecté": { price: 490, time: 1 },
+    "Interphone audio": { price: 260, time: 0.5 },
+    "Caméra IP extérieure": { price: 350, time: 0.5 },
+    "Baie de brassage": { price: 420, time: 1 }
   },
   "🧰 Prestations & Main d'œuvre": {
-    "Heure de main d'œuvre": 55, "Forfait déplacement": 50, "Mise en conformité tableau": 850, "Saignée dans béton (ml)": 40, "Recherche de panne": 90, "Consuel (frais + dossier)": 250
+    "Heure de main d'œuvre": { price: 55, time: 1 },
+    "Forfait déplacement": { price: 50, time: 0 },
+    "Mise en conformité tableau": { price: 850, time: 3 },
+    "Saignée dans béton (ml)": { price: 40, time: 0.1 },
+    "Recherche de panne": { price: 90, time: 1 },
+    "Consuel (frais + dossier)": { price: 250, time: 0 }
   }
 };
 
-let database = JSON.parse(localStorage.getItem('zelio_full_v4')) || defaultDatabase;
+let database = JSON.parse(localStorage.getItem('zelio_full_v5')) || defaultDatabase;
+let photos = JSON.parse(localStorage.getItem('zelio_photos')) || [];
+let favorites = JSON.parse(localStorage.getItem('zelio_favorites')) || [];
+let clients = JSON.parse(localStorage.getItem('zelio_clients')) || [];
 
-function showPage(id) {
+// --- NAVIGATION ---
+function showPage(id, event) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('page-' + id).classList.add('active');
-  event.currentTarget.classList.add('active');
+  if(event) event.currentTarget.classList.add('active');
+  if(id === 'favorites') renderFavorites();
+  if(id === 'clients') renderClients();
+  if(id === 'export') document.getElementById('import-file').value = '';
 }
 
+// --- ACCORDÉON ---
 function toggleAccordion(header) { header.parentElement.classList.toggle('open'); }
 function toggleAll(show) { document.querySelectorAll('.accordion-item').forEach(item => show ? item.classList.add('open') : item.classList.remove('open')); }
 function resetQuantities() { if(confirm("Réinitialiser toutes les quantités à 0 ?")) { document.querySelectorAll('.qty-in').forEach(s => s.value = 0); calculate(); } }
-function fullReset() { if(confirm("Voulez-vous supprimer tous vos prix personnalisés et revenir à la liste d'origine ?")) { localStorage.removeItem('zelio_full_v4'); location.reload(); } }
+function fullReset() { if(confirm("Voulez-vous supprimer tous vos prix personnalisés et revenir à la liste d'origine ?")) { localStorage.clear(); location.reload(); } }
 
+// --- FAVORIS ---
+function toggleFavorite(cat, prod) {
+  const key = cat + '||' + prod;
+  if(favorites.includes(key)) favorites = favorites.filter(f => f !== key);
+  else favorites.push(key);
+  localStorage.setItem('zelio_favorites', JSON.stringify(favorites));
+  render();
+}
+function renderFavorites() {
+  const favDiv = document.getElementById('favorites-list');
+  favDiv.innerHTML = '';
+  if(!favorites.length) { favDiv.innerHTML = "<p style='color:#888;'>Aucun favori pour l'instant.</p>"; return; }
+  favorites.forEach(key => {
+    const [cat, prod] = key.split('||');
+    if(database[cat] && database[cat][prod]) {
+      favDiv.innerHTML += `
+        <div class="item">
+          <label>${cat} - <b>${prod}</b></label>
+          <span>${database[cat][prod].price}€</span>
+          <button class="btn-small btn-danger" onclick="toggleFavorite('${cat.replace(/'/g,"\\'")}', '${prod.replace(/'/g,"\\'")}')">Retirer</button>
+        </div>
+      `;
+    }
+  });
+}
+
+// --- CLIENTS ---
+function saveClient() {
+  const c = {
+    name: document.getElementById('c-name').value,
+    phone: document.getElementById('c-phone').value,
+    email: document.getElementById('c-email').value,
+    addr: document.getElementById('c-addr').value,
+    site: document.getElementById('c-site').value,
+    type: document.getElementById('c-type').value,
+    notes: document.getElementById('c-notes').value
+  };
+  if(!c.name) return alert("Nom du client obligatoire !");
+  if(clients.find(cl => cl.name === c.name)) {
+    if(!confirm("Ce client existe déjà. Écraser ?")) return;
+    clients = clients.filter(cl => cl.name !== c.name);
+  }
+  clients.push(c);
+  localStorage.setItem('zelio_clients', JSON.stringify(clients));
+  renderClientSelect();
+  alert("Client enregistré !");
+}
+function renderClientSelect() {
+  const sel = document.getElementById('client-select');
+  sel.innerHTML = `<option value="">-- Nouveau client --</option>`;
+  clients.forEach((c,i) => {
+    sel.innerHTML += `<option value="${i}">${c.name}</option>`;
+  });
+}
+document.getElementById('client-select').addEventListener('change', function() {
+  const idx = this.value;
+  if(idx === "") {
+    document.getElementById('c-name').value = "";
+    document.getElementById('c-phone').value = "";
+    document.getElementById('c-email').value = "";
+    document.getElementById('c-addr').value = "";
+    document.getElementById('c-site').value = "";
+    document.getElementById('c-type').value = "";
+    document.getElementById('c-notes').value = "";
+    return;
+  }
+  const c = clients[idx];
+  document.getElementById('c-name').value = c.name;
+  document.getElementById('c-phone').value = c.phone;
+  document.getElementById('c-email').value = c.email;
+  document.getElementById('c-addr').value = c.addr;
+  document.getElementById('c-site').value = c.site;
+  document.getElementById('c-type').value = c.type;
+  document.getElementById('c-notes').value = c.notes;
+});
+function renderClients() {
+  const clDiv = document.getElementById('clients-list');
+  clDiv.innerHTML = '';
+  if(!clients.length) { clDiv.innerHTML = "<p style='color:#888;'>Aucun client enregistré.</p>"; return; }
+  clients.forEach((c, i) => {
+    clDiv.innerHTML += `
+      <div class="item">
+        <label><b>${c.name}</b> - ${c.phone} - ${c.email}</label>
+        <button class="btn-small btn-danger" onclick="deleteClient(${i})">Supprimer</button>
+      </div>
+    `;
+  });
+}
+function deleteClient(idx) {
+  if(confirm("Supprimer ce client ?")) {
+    clients.splice(idx,1);
+    localStorage.setItem('zelio_clients', JSON.stringify(clients));
+    renderClients();
+    renderClientSelect();
+  }
+}
+
+// --- PHOTOS ---
+document.getElementById('site-photos').addEventListener('change', function(e) {
+  const files = Array.from(e.target.files);
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+      photos.push(evt.target.result);
+      localStorage.setItem('zelio_photos', JSON.stringify(photos));
+      showPhotoPreview();
+    };
+    reader.readAsDataURL(file);
+  });
+  e.target.value = '';
+});
+function showPhotoPreview() {
+  const preview = document.getElementById('photo-preview');
+  preview.innerHTML = '';
+  photos.forEach((src, idx) => {
+    preview.innerHTML += `
+      <div style="position:relative;">
+        <img src="${src}" style="width:90px; height:90px; object-fit:cover; border-radius:8px; border:1px solid #ccc;">
+        <button onclick="removePhoto(${idx})" style="position:absolute;top:2px;right:2px;background:#ef4444;color:white;border:none;border-radius:50%;width:22px;height:22px;cursor:pointer;">×</button>
+      </div>
+    `;
+  });
+}
+function removePhoto(idx) {
+  photos.splice(idx, 1);
+  localStorage.setItem('zelio_photos', JSON.stringify(photos));
+  showPhotoPreview();
+}
+showPhotoPreview();
+
+// --- RENDU DYNAMIQUE ---
 function render() {
   const configA = document.getElementById('config-accordion');
   const pricesA = document.getElementById('prices-accordion');
   configA.innerHTML = ''; pricesA.innerHTML = '';
-
   for (const [cat, prods] of Object.entries(database)) {
     const catId = cat.replace(/[^\w]/g, '');
     configA.innerHTML += `<div class="accordion-item"><button class="accordion-header" onclick="toggleAccordion(this)">${cat}</button><div class="accordion-content"><div class="grid-items" id="c-${catId}"></div></div></div>`;
     pricesA.innerHTML += `<div class="accordion-item"><button class="accordion-header" onclick="toggleAccordion(this)">Modifier Tarifs : ${cat}</button><div class="accordion-content"><div class="grid-items" id="p-${catId}"></div></div></div>`;
-
-    for (const [name, price] of Object.entries(prods)) {
-      document.getElementById(`c-${catId}`).innerHTML += `<div class="item"><label>${name}</label><select class="qty-in" data-cat="${cat}" data-prod="${name}">${Array.from({length:101},(_,i)=>`<option value="${i}">${i}</option>`).join('')}</select></div>`;
-      document.getElementById(`p-${catId}`).innerHTML += `<div class="item"><label>${name}</label><input type="number" value="${price}" class="price-in" data-cat="${cat}" data-prod="${name}"></div>`;
+    for (const [name, obj] of Object.entries(prods)) {
+      const favKey = cat + '||' + name;
+      document.getElementById(`c-${catId}`).innerHTML += `
+        <div class="item">
+          <button class="favorite-btn${favorites.includes(favKey) ? ' fav' : ''}" title="Ajouter/Retirer des favoris" onclick="toggleFavorite('${cat.replace(/'/g,"\\'")}', '${name.replace(/'/g,"\\'")}')">${favorites.includes(favKey) ? '★' : '☆'}</button>
+          <label>${name} <span style="color:#64748b;font-size:0.8em;">(${obj.time}h)</span></label>
+          <select class="qty-in" data-cat="${cat}" data-prod="${name}">${Array.from({length:101},(_,i)=>`<option value="${i}">${i}</option>`).join('')}</select>
+        </div>`;
+      document.getElementById(`p-${catId}`).innerHTML += `
+        <div class="item">
+          <label>${name} <span style="color:#64748b;font-size:0.8em;">(${obj.time}h)</span></label>
+          <input type="number" value="${obj.price}" class="price-in" data-cat="${cat}" data-prod="${name}">
+          <input type="number" value="${obj.time}" step="0.01" class="time-in" data-cat="${cat}" data-prod="${name}" style="width:60px;" title="Durée estimée (h)">
+        </div>`;
     }
   }
-  document.querySelectorAll('.qty-in, .price-in').forEach(el => el.addEventListener('input', calculate));
+  document.querySelectorAll('.qty-in, .price-in, .time-in').forEach(el => el.addEventListener('input', calculate));
 }
+render();
 
+// --- CALCULS ---
 function calculate() {
-  let total = 0;
-  document.querySelectorAll('.price-in').forEach(i => { database[i.dataset.cat][i.dataset.prod] = parseFloat(i.value) || 0; });
-  localStorage.setItem('zelio_full_v4', JSON.stringify(database));
-  document.querySelectorAll('.qty-in').forEach(s => { total += parseInt(s.value) * database[s.dataset.cat][s.dataset.prod]; });
+  let total = 0, totalTime = 0;
+  document.querySelectorAll('.price-in').forEach(i => { 
+    database[i.dataset.cat][i.dataset.prod].price = parseFloat(i.value) || 0; 
+  });
+  document.querySelectorAll('.time-in').forEach(i => { 
+    database[i.dataset.cat][i.dataset.prod].time = parseFloat(i.value) || 0; 
+  });
+  localStorage.setItem('zelio_full_v5', JSON.stringify(database));
+  document.querySelectorAll('.qty-in').forEach(s => { 
+    const q = parseInt(s.value);
+    const obj = database[s.dataset.cat][s.dataset.prod];
+    total += q * obj.price;
+    totalTime += q * obj.time;
+  });
   document.getElementById('grand-total').innerText = total.toLocaleString();
+  document.getElementById('grand-time').innerText = totalTime.toFixed(2);
 }
+calculate();
 
+// --- PDF DEVIS ---
 function generatePDF() {
-  const c = { name: document.getElementById('c-name').value, phone: document.getElementById('c-phone').value, email: document.getElementById('c-email').value, addr: document.getElementById('c-addr').value, site: document.getElementById('c-site').value, type: document.getElementById('c-type').value };
+  const c = { name: document.getElementById('c-name').value, phone: document.getElementById('c-phone').value, email: document.getElementById('c-email').value, addr: document.getElementById('c-addr').value, site: document.getElementById('c-site').value, type: document.getElementById('c-type').value, notes: document.getElementById('c-notes').value };
   const m = { name: document.getElementById('my-name').value, siret: document.getElementById('my-siret').value, addr: document.getElementById('my-addr').value, ins: document.getElementById('my-ins').value };
-  
-  let rows = "";
+  let rows = "", totalTime = 0;
   document.querySelectorAll('.qty-in').forEach(s => {
     const q = parseInt(s.value);
     if(q > 0) {
-      const p = database[s.dataset.cat][s.dataset.prod];
-      rows += `<tr><td style="padding:10px; border-bottom:1px solid #eee;">${s.dataset.prod}</td><td style="text-align:center; border-bottom:1px solid #eee;">${q}</td><td style="text-align:right; border-bottom:1px solid #eee;">${p}€</td><td style="text-align:right; border-bottom:1px solid #eee;">${q*p}€</td></tr>`;
+      const obj = database[s.dataset.cat][s.dataset.prod];
+      rows += `<tr><td style="padding:10px; border-bottom:1px solid #eee;">${s.dataset.prod}</td><td style="text-align:center; border-bottom:1px solid #eee;">${q}</td><td style="text-align:right; border-bottom:1px solid #eee;">${obj.price}€</td><td style="text-align:right; border-bottom:1px solid #eee;">${q*obj.price}€</td></tr>`;
+      totalTime += q * obj.time;
     }
   });
-
   if(!rows) return alert("Le devis est vide !");
-
   const element = document.createElement('div');
   element.style.padding = "40px";
   element.style.fontFamily = "sans-serif";
@@ -212,7 +479,9 @@ function generatePDF() {
             <strong style="color:#4f46e5;">DÉTAILS CHANTIER :</strong><br>Type: ${c.type}<br>Lieu: ${c.site || c.addr}
         </div>
     </div>
-    <table style="width:100%; border-collapse:collapse; font-size:13px;">
+    <h2 style="color:#4f46e5; margin-top:30px;">Notes du Chantier</h2>
+    <p style="background:#f8fafc; padding:10px; border-radius:8px; color:#333;">${c.notes || "Aucune note."}</p>
+    <table style="width:100%; border-collapse:collapse; font-size:13px; margin-top:20px;">
         <tr style="background:#4f46e5; color:white;">
             <th style="padding:12px; text-align:left;">Désignation</th><th style="padding:12px;">Qté</th><th style="padding:12px; text-align:right;">PU HT</th><th style="padding:12px; text-align:right;">Total HT</th>
         </tr>
@@ -222,17 +491,114 @@ function generatePDF() {
         <p style="margin:5px 0;">Total HT : ${document.getElementById('grand-total').innerText} €</p>
         <p style="margin:5px 0;">TVA (20%) : ${(parseFloat(document.getElementById('grand-total').innerText.replace(/\s/g,''))*0.2).toFixed(2)} €</p>
         <h2 style="color:#4f46e5; margin-top:10px;">TOTAL TTC : ${(parseFloat(document.getElementById('grand-total').innerText.replace(/\s/g,''))*1.2).toFixed(2)} €</h2>
+        <p style="margin:5px 0;">Temps estimé : ${totalTime.toFixed(2)} h</p>
     </div>
     <div style="margin-top:50px; font-size:11px; color:#666; border-top:1px solid #eee; padding-top:15px;">
         <p><strong>Conditions :</strong> Valable 30 jours. Assurance Décennale : ${m.ins}</p>
         <p style="margin-top:20px;">Bon pour accord le : ____ / ____ / 20____ &nbsp;&nbsp;&nbsp; Cachet et Signature :</p>
     </div>
   `;
-
   html2pdf().from(element).set({ margin: 0.5, filename: `Devis_ZELIO_${c.name}.pdf`, html2canvas: { scale: 2 } }).save();
 }
 
-render();
+// --- PDF RAPPORT ---
+function generateReport() {
+  const c = { name: document.getElementById('c-name').value, phone: document.getElementById('c-phone').value, email: document.getElementById('c-email').value, addr: document.getElementById('c-addr').value, site: document.getElementById('c-site').value, type: document.getElementById('c-type').value, notes: document.getElementById('c-notes').value };
+  const m = { name: document.getElementById('my-name').value, siret: document.getElementById('my-siret').value, addr: document.getElementById('my-addr').value, ins: document.getElementById('my-ins').value };
+  let rows = "", totalTime = 0;
+  document.querySelectorAll('.qty-in').forEach(s => {
+    const q = parseInt(s.value);
+    if(q > 0) {
+      const obj = database[s.dataset.cat][s.dataset.prod];
+      rows += `<tr><td style="padding:10px; border-bottom:1px solid #eee;">${s.dataset.prod}</td><td style="text-align:center; border-bottom:1px solid #eee;">${q}</td><td style="text-align:right; border-bottom:1px solid #eee;">${obj.price}€</td><td style="text-align:right; border-bottom:1px solid #eee;">${q*obj.price}€</td></tr>`;
+      totalTime += q * obj.time;
+    }
+  });
+  let photosHtml = "";
+  if(photos.length) {
+    photosHtml = `<div style="margin:20px 0; display:flex; flex-wrap:wrap; gap:10px;">` +
+      photos.map(src => `<img src="${src}" style="width:180px; height:130px; object-fit:cover; border-radius:8px; border:1px solid #ccc;">`).join('') +
+      `</div>`;
+  }
+  const element = document.createElement('div');
+  element.style.padding = "40px";
+  element.style.fontFamily = "sans-serif";
+  element.innerHTML = `
+    <div style="display:flex; justify-content:space-between; border-bottom:3px solid #4f46e5; padding-bottom:15px; margin-bottom:25px;">
+        <div><h1 style="color:#4f46e5; margin:0;">${m.name || 'RAPPORT DE CHANTIER'}</h1><p style="font-size:12px; margin-top:5px;">SIRET: ${m.siret}<br>${m.addr}</p></div>
+        <div style="text-align:right;"><h2>RAPPORT N° ${Math.floor(Math.random()*1000)}</h2><p>Date: ${new Date().toLocaleDateString()}</p></div>
+    </div>
+    <div style="display:flex; justify-content:space-between; margin-bottom:35px; font-size:14px;">
+        <div style="width:48%; background:#f8fafc; padding:20px; border-radius:10px;">
+            <strong style="color:#4f46e5;">CLIENT :</strong><br>${c.name}<br>${c.addr}<br>Tél: ${c.phone}<br>${c.email}
+        </div>
+        <div style="width:48%; border:1px solid #e2e8f0; padding:20px; border-radius:10px;">
+            <strong style="color:#4f46e5;">DÉTAILS CHANTIER :</strong><br>Type: ${c.type}<br>Lieu: ${c.site || c.addr}
+        </div>
+    </div>
+    <h2 style="color:#4f46e5;">Photos du Chantier</h2>
+    ${photosHtml || "<p style='color:#888;'>Aucune photo ajoutée.</p>"}
+    <h2 style="color:#4f46e5; margin-top:30px;">Notes du Chantier</h2>
+    <p style="background:#f8fafc; padding:10px; border-radius:8px; color:#333;">${c.notes || "Aucune note."}</p>
+    <h2 style="color:#4f46e5; margin-top:30px;">Liste des Prestations</h2>
+    <table style="width:100%; border-collapse:collapse; font-size:13px;">
+        <tr style="background:#4f46e5; color:white;">
+            <th style="padding:12px; text-align:left;">Désignation</th><th style="padding:12px;">Qté</th><th style="padding:12px; text-align:right;">PU HT</th><th style="padding:12px; text-align:right;">Total HT</th>
+        </tr>
+        ${rows || "<tr><td colspan='4' style='text-align:center; color:#888; padding:20px;'>Aucune prestation sélectionnée.</td></tr>"}
+    </table>
+    <div style="text-align:right; margin-top:40px;">
+        <p style="margin:5px 0;">Total HT : ${document.getElementById('grand-total').innerText} €</p>
+        <p style="margin:5px 0;">TVA (20%) : ${(parseFloat(document.getElementById('grand-total').innerText.replace(/\s/g,''))*0.2).toFixed(2)} €</p>
+        <h2 style="color:#4f46e5; margin-top:10px;">TOTAL TTC : ${(parseFloat(document.getElementById('grand-total').innerText.replace(/\s/g,''))*1.2).toFixed(2)} €</h2>
+        <p style="margin:5px 0;">Temps estimé : ${totalTime.toFixed(2)} h</p>
+    </div>
+    <div style="margin-top:50px; font-size:11px; color:#666; border-top:1px solid #eee; padding-top:15px;">
+        <p><strong>Conditions :</strong> Valable 30 jours. Assurance Décennale : ${m.ins}</p>
+        <p style="margin-top:20px;">Signature du client :</p>
+    </div>
+  `;
+  html2pdf().from(element).set({ margin: 0.5, filename: `Rapport_ZELIO_${c.name}.pdf`, html2canvas: { scale: 2 } }).save();
+}
+
+// --- EXPORT/IMPORT ---
+function exportData() {
+  const data = {
+    database, photos, favorites, clients
+  };
+  const blob = new Blob([JSON.stringify(data)], {type: "application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = "zelio_backup.json";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+document.getElementById('import-file').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    try {
+      const data = JSON.parse(evt.target.result);
+      if(data.database) database = data.database;
+      if(data.photos) photos = data.photos;
+      if(data.favorites) favorites = data.favorites;
+      if(data.clients) clients = data.clients;
+      localStorage.setItem('zelio_full_v5', JSON.stringify(database));
+      localStorage.setItem('zelio_photos', JSON.stringify(photos));
+      localStorage.setItem('zelio_favorites', JSON.stringify(favorites));
+      localStorage.setItem('zelio_clients', JSON.stringify(clients));
+      alert("Importation réussie !");
+      location.reload();
+    } catch(e) { alert("Fichier invalide."); }
+  };
+  reader.readAsText(file);
+});
+
+// --- INIT ---
+renderClientSelect();
+showPhotoPreview();
 </script>
 </body>
 </html>
