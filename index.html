@@ -12,8 +12,8 @@ body { margin: 0; font-family: -apple-system, sans-serif; background: var(--bg);
 .header-brand { background: white; padding: 1.5rem; text-align: center; border-bottom: 1px solid #e2e8f0; }
 .logo-text { font-size: 2.5rem; font-weight: 900; color: var(--primary); letter-spacing: -2px; margin: 0; }
 .logo-subtitle { font-size: 0.8rem; color: #64748b; text-transform: uppercase; letter-spacing: 2px; margin-top: -5px; }
-.nav-tabs { display: flex; justify-content: center; gap: 10px; background: white; padding: 0.8rem; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-.tab-btn { padding: 0.7rem 1.1rem; border: none; background: #e2e8f0; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.9rem; }
+.nav-tabs { display: flex; justify-content: center; gap: 10px; background: white; padding: 0.8rem; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.05); flex-wrap: wrap;}
+.tab-btn { padding: 0.7rem 1.1rem; border: none; background: #e2e8f0; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.9rem; flex: 1 1 120px; min-width: 90px; max-width: 180px; }
 .tab-btn.active { background: var(--primary); color: white; }
 .container { max-width: 1100px; margin: auto; padding: 1rem; }
 .page { display: none; }
@@ -38,15 +38,20 @@ textarea.full-width { resize: vertical; }
 .item { display: flex; align-items: center; justify-content: space-between; background: white; padding: 0.6rem 0.9rem; border-radius: 8px; border: 1px solid #e2e8f0; position:relative;}
 .item label { font-size: 0.85rem; flex: 1; margin-right: 10px; }
 select, input[type="number"] { width: 70px; padding: 0.4rem; border-radius: 6px; border: 1px solid #cbd5e1; }
-.favorite-btn { background: none; border: none; cursor: pointer; font-size: 1.2rem; color: #eab308; margin-right: 6px; }
-.favorite-btn.fav { color: #f59e42; }
 .footer { position: fixed; bottom: 0; width: 100%; background: white; padding: 1rem; display: flex; justify-content: space-around; align-items: center; box-shadow: 0 -5px 15px rgba(0,0,0,0.1); z-index: 1001; flex-wrap:wrap;}
 .total-amount { font-size: 1.5rem; font-weight: 800; color: var(--primary); }
 .btn-generate { background: var(--primary); color: white; padding: 0.9rem 2rem; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; margin: 0 5px;}
 .footer-info { font-size: 1rem; color: #64748b; margin: 0 10px;}
+.toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); background: #10b981; color: white; padding: 12px 24px; border-radius: 8px; font-size: 1rem; z-index: 2000; box-shadow: 0 2px 10px rgba(0,0,0,0.15);}
 @media (max-width: 700px) {
   .footer { flex-direction: column; gap: 10px; }
   .btn-generate { width: 100%; }
+  .nav-tabs { flex-wrap: wrap; gap: 5px; }
+  .tab-btn { min-width: 80px; font-size: 0.85rem; padding: 0.6rem 0.5rem; }
+}
+@media (max-width: 500px) {
+  .nav-tabs { flex-direction: column; align-items: stretch; }
+  .tab-btn { width: 100%; min-width: unset; }
 }
 </style>
 </head>
@@ -54,16 +59,15 @@ select, input[type="number"] { width: 70px; padding: 0.4rem; border-radius: 6px;
 
 <div class="header-brand">
     <h1 class="logo-text">ZELIO</h1>
-    <div class="logo-subtitle">Logiciel de Chiffrage Électrique Professionnel</div>
+    <div class="logo-subtitle">Logiciel de Chiffrage Professionnel</div>
 </div>
 
-<div class="nav-tabs">
-  <button class="tab-btn active" onclick="showPage('config', event)">📋 Devis</button>
-  <button class="tab-btn" onclick="showPage('prices', event)">⚙️ Paramètres</button>
-  <button class="tab-btn" onclick="showPage('favorites', event)">⭐ Favoris</button>
-  <button class="tab-btn" onclick="showPage('clients', event)">👥 Clients</button>
-  <button class="tab-btn" onclick="showPage('export', event)">💾 Sauvegarde</button>
-  <button class="tab-btn" onclick="showPage('folders', event)">📁 Dossiers</button>
+<div class="nav-tabs" role="tablist">
+  <button class="tab-btn active" onclick="showPage('config', event)" aria-selected="true" aria-controls="page-config">📋 Devis</button>
+  <button class="tab-btn" onclick="showPage('prices', event)" aria-selected="false" aria-controls="page-prices">⚙️ Paramètres</button>
+  <button class="tab-btn" onclick="showPage('clients', event)" aria-selected="false" aria-controls="page-clients">👥 Clients</button>
+  <button class="tab-btn" onclick="showPage('export', event)" aria-selected="false" aria-controls="page-export">💾 Sauvegarde</button>
+  <button class="tab-btn" onclick="showPage('folders', event)" aria-selected="false" aria-controls="page-folders">📁 Dossiers</button>
 </div>
 
 <div class="container">
@@ -78,8 +82,8 @@ select, input[type="number"] { width: 70px; padding: 0.4rem; border-radius: 6px;
             <option value="">-- Nouveau client --</option>
           </select>
         </div>
-        <div class="form-group"><label>Nom du Client</label><input type="text" id="c-name" class="full-width" placeholder="Ex: Jean Dupont"></div>
-        <div class="form-group"><label>Téléphone</label><input type="text" id="c-phone" class="full-width" placeholder="06 00 00 00 00"></div>
+        <div class="form-group"><label>Nom du Client</label><input type="text" id="c-name" class="full-width" placeholder="Ex: Jean Dupont" required></div>
+        <div class="form-group"><label>Téléphone</label><input type="text" id="c-phone" class="full-width" placeholder="06 00 00 00 00" pattern="^0[1-9]([-. ]?[0-9]{2}){4}$"></div>
         <div class="form-group"><label>Email</label><input type="email" id="c-email" class="full-width" placeholder="client@email.com"></div>
         <div class="form-group"><label>Adresse de Facturation</label><input type="text" id="c-addr" class="full-width" placeholder="Adresse complète"></div>
         <div class="form-group"><label>Adresse du Chantier</label><input type="text" id="c-site" class="full-width" placeholder="Si différente"></div>
@@ -114,21 +118,13 @@ select, input[type="number"] { width: 70px; padding: 0.4rem; border-radius: 6px;
         <h2>🛠️ Mes Informations Artisan</h2>
         <div class="grid-forms">
             <div class="form-group"><label>Nom Entreprise / Nom</label><input type="text" id="my-name" class="full-width"></div>
-            <div class="form-group"><label>SIRET</label><input type="text" id="my-siret" class="full-width"></div>
+            <div class="form-group"><label>SIRET</label><input type="text" id="my-siret" class="full-width" pattern="^\d{14}$"></div>
             <div class="form-group"><label>Adresse Pro</label><input type="text" id="my-addr" class="full-width"></div>
             <div class="form-group"><label>Assurance Décennale</label><input type="text" id="my-ins" class="full-width"></div>
         </div>
         <button class="btn-small btn-danger" style="margin-top:20px;" onclick="fullReset()">⚠️ Réinitialiser TOUTE la base de données</button>
     </div>
     <div id="prices-accordion"></div>
-  </div>
-
-  <!-- PAGE FAVORIS -->
-  <div id="page-favorites" class="page">
-    <div class="form-section">
-      <h2>⭐ Mes Prestations Favorites</h2>
-      <div id="favorites-list"></div>
-    </div>
   </div>
 
   <!-- PAGE CLIENTS -->
@@ -145,7 +141,7 @@ select, input[type="number"] { width: 70px; padding: 0.4rem; border-radius: 6px;
       <h2>💾 Sauvegarde / Restauration</h2>
       <button class="btn-small" onclick="exportData()">Exporter la base (JSON)</button>
       <input type="file" id="import-file" accept=".json" style="margin-top:10px;">
-      <p style="font-size:0.9em; color:#64748b;">Exportez ou importez toutes vos données (produits, clients, photos, favoris, dossiers, etc.)</p>
+      <p style="font-size:0.9em; color:#64748b;">Exportez ou importez toutes vos données (produits, clients, photos, dossiers, etc.)</p>
     </div>
   </div>
 
@@ -165,7 +161,18 @@ select, input[type="number"] { width: 70px; padding: 0.4rem; border-radius: 6px;
   <button class="btn-generate" style="background:#10b981;" onclick="generateReport()">GÉNÉRER LE RAPPORT</button>
 </div>
 
+<div id="toast" class="toast" style="display:none;"></div>
+
 <script>
+// --- TOAST FEEDBACK ---
+function showToast(msg, color="#10b981") {
+  const t = document.getElementById('toast');
+  t.innerText = msg;
+  t.style.background = color;
+  t.style.display = "block";
+  setTimeout(()=>{ t.style.display="none"; }, 2200);
+}
+
 // --- BASE DE DONNÉES AVEC UNITÉS ---
 const defaultDatabase = {
   "⚡ Éclairage Intérieur": {
@@ -259,10 +266,8 @@ const defaultDatabase = {
     "Consuel (frais + dossier)": { price: 250, time: 0, unit: "u" }
   }
 };
-
 let database = JSON.parse(localStorage.getItem('zelio_full_v6')) || defaultDatabase;
 let photos = JSON.parse(localStorage.getItem('zelio_photos')) || [];
-let favorites = JSON.parse(localStorage.getItem('zelio_favorites')) || [];
 let clients = JSON.parse(localStorage.getItem('zelio_clients')) || [];
 let folders = JSON.parse(localStorage.getItem('zelio_folders')) || [];
 let formData = JSON.parse(localStorage.getItem('zelio_formdata')) || {};
@@ -273,7 +278,6 @@ function showPage(id, event) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('page-' + id).classList.add('active');
   if(event) event.currentTarget.classList.add('active');
-  if(id === 'favorites') renderFavorites();
   if(id === 'clients') renderClients();
   if(id === 'export') document.getElementById('import-file').value = '';
   if(id === 'folders') renderFolders();
@@ -282,48 +286,23 @@ function showPage(id, event) {
 // --- ACCORDÉON ---
 function toggleAccordion(header) { header.parentElement.classList.toggle('open'); }
 function toggleAll(show) { document.querySelectorAll('.accordion-item').forEach(item => show ? item.classList.add('open') : item.classList.remove('open')); }
-function resetQuantities() { if(confirm("Réinitialiser toutes les quantités à 0 ?")) { document.querySelectorAll('.qty-in').forEach(s => s.value = 0); calculate(); saveFormData(); } }
+function resetQuantities() { if(confirm("Réinitialiser toutes les quantités à 0 ?")) { document.querySelectorAll('.qty-in').forEach(s => s.value = 0); calculate(); saveFormData(); showToast("Panier vidé !"); } }
 function fullReset() { if(confirm("Voulez-vous supprimer tous vos prix personnalisés et revenir à la liste d'origine ?")) { localStorage.clear(); location.reload(); } }
-
-// --- FAVORIS ---
-function toggleFavorite(cat, prod, e) {
-  if(e) e.stopPropagation();
-  const key = cat + '||' + prod;
-  if(favorites.includes(key)) favorites = favorites.filter(f => f !== key);
-  else favorites.push(key);
-  localStorage.setItem('zelio_favorites', JSON.stringify(favorites));
-  render();
-}
-function renderFavorites() {
-  const favDiv = document.getElementById('favorites-list');
-  favDiv.innerHTML = '';
-  if(!favorites.length) { favDiv.innerHTML = "<p style='color:#888;'>Aucun favori pour l'instant.</p>"; return; }
-  favorites.forEach(key => {
-    const [cat, prod] = key.split('||');
-    if(database[cat] && database[cat][prod]) {
-      favDiv.innerHTML += `
-        <div class="item">
-          <label>${cat} - <b>${prod}</b> <span style="color:#64748b;font-size:0.8em;">(${database[cat][prod].unit})</span></label>
-          <span>${database[cat][prod].price}€</span>
-          <button class="btn-small btn-danger" onclick="toggleFavorite('${cat.replace(/'/g,"\\'")}', '${prod.replace(/'/g,"\\'")}', event)">Retirer</button>
-        </div>
-      `;
-    }
-  });
-}
 
 // --- CLIENTS ---
 function saveClient() {
   const c = {
-    name: document.getElementById('c-name').value,
-    phone: document.getElementById('c-phone').value,
-    email: document.getElementById('c-email').value,
-    addr: document.getElementById('c-addr').value,
-    site: document.getElementById('c-site').value,
-    type: document.getElementById('c-type').value,
-    notes: document.getElementById('c-notes').value
+    name: document.getElementById('c-name').value.trim(),
+    phone: document.getElementById('c-phone').value.trim(),
+    email: document.getElementById('c-email').value.trim(),
+    addr: document.getElementById('c-addr').value.trim(),
+    site: document.getElementById('c-site').value.trim(),
+    type: document.getElementById('c-type').value.trim(),
+    notes: document.getElementById('c-notes').value.trim()
   };
-  if(!c.name) return alert("Nom du client obligatoire !");
+  if(!c.name) return showToast("Nom du client obligatoire !", "#ef4444");
+  if(c.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(c.email)) return showToast("Email invalide !", "#ef4444");
+  if(c.phone && !/^0[1-9]([-. ]?[0-9]{2}){4}$/.test(c.phone)) return showToast("Téléphone invalide !", "#ef4444");
   if(clients.find(cl => cl.name === c.name)) {
     if(!confirm("Ce client existe déjà. Écraser ?")) return;
     clients = clients.filter(cl => cl.name !== c.name);
@@ -331,7 +310,7 @@ function saveClient() {
   clients.push(c);
   localStorage.setItem('zelio_clients', JSON.stringify(clients));
   renderClientSelect();
-  alert("Client enregistré !");
+  showToast("Client enregistré !");
 }
 function renderClientSelect() {
   const sel = document.getElementById('client-select');
@@ -382,23 +361,40 @@ function deleteClient(idx) {
     localStorage.setItem('zelio_clients', JSON.stringify(clients));
     renderClients();
     renderClientSelect();
+    showToast("Client supprimé !");
   }
 }
 
-// --- PHOTOS ---
+// --- PHOTOS (compression avant stockage, max 10 photos) ---
 document.getElementById('site-photos').addEventListener('change', function(e) {
   const files = Array.from(e.target.files);
-  files.forEach(file => {
-    const reader = new FileReader();
-    reader.onload = function(evt) {
-      photos.push(evt.target.result);
+  if(photos.length + files.length > 10) {
+    showToast("Maximum 10 photos par dossier !", "#ef4444");
+    return;
+  }
+  files.forEach(file => compressAndStorePhoto(file));
+  e.target.value = '';
+});
+function compressAndStorePhoto(file) {
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    const img = new Image();
+    img.onload = function() {
+      const canvas = document.createElement('canvas');
+      const maxW = 800;
+      const scale = Math.min(1, maxW / img.width);
+      canvas.width = img.width * scale;
+      canvas.height = img.height * scale;
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+      photos.push(dataUrl);
       localStorage.setItem('zelio_photos', JSON.stringify(photos));
       showPhotoPreview();
     };
-    reader.readAsDataURL(file);
-  });
-  e.target.value = '';
-});
+    img.src = evt.target.result;
+  };
+  reader.readAsDataURL(file);
+}
 function showPhotoPreview() {
   const preview = document.getElementById('photo-preview');
   preview.innerHTML = '';
@@ -415,6 +411,7 @@ function removePhoto(idx) {
   photos.splice(idx, 1);
   localStorage.setItem('zelio_photos', JSON.stringify(photos));
   showPhotoPreview();
+  showToast("Photo supprimée !");
 }
 showPhotoPreview();
 
@@ -432,18 +429,22 @@ function takePhoto() {
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
         canvas.getContext('2d').drawImage(video, 0, 0);
-        const dataUrl = canvas.toDataURL('image/jpeg');
-        photos.push(dataUrl);
-        localStorage.setItem('zelio_photos', JSON.stringify(photos));
-        showPhotoPreview();
-        // Stop camera
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+        if(photos.length >= 10) {
+          showToast("Maximum 10 photos par dossier !", "#ef4444");
+        } else {
+          photos.push(dataUrl);
+          localStorage.setItem('zelio_photos', JSON.stringify(photos));
+          showPhotoPreview();
+          showToast("Photo ajoutée !");
+        }
         stream.getTracks().forEach(track => track.stop());
         video.style.display = 'none';
         captureBtn.style.display = 'none';
       };
     })
     .catch(() => {
-      alert("Impossible d'accéder à la caméra.");
+      showToast("Impossible d'accéder à la caméra.", "#ef4444");
       video.style.display = 'none';
       captureBtn.style.display = 'none';
     });
@@ -459,10 +460,8 @@ function render() {
     configA.innerHTML += `<div class="accordion-item"><button class="accordion-header" onclick="toggleAccordion(this)">${cat}</button><div class="accordion-content"><div class="grid-items" id="c-${catId}"></div></div></div>`;
     pricesA.innerHTML += `<div class="accordion-item"><button class="accordion-header" onclick="toggleAccordion(this)">Modifier Tarifs : ${cat}</button><div class="accordion-content"><div class="grid-items" id="p-${catId}"></div></div></div>`;
     for (const [name, obj] of Object.entries(prods)) {
-      const favKey = cat + '||' + name;
       document.getElementById(`c-${catId}`).innerHTML += `
         <div class="item">
-          <button class="favorite-btn${favorites.includes(favKey) ? ' fav' : ''}" title="Ajouter/Retirer des favoris" onclick="toggleFavorite('${cat.replace(/'/g,"\\'")}', '${name.replace(/'/g,"\\'")}', event); return false;">${favorites.includes(favKey) ? '★' : '☆'}</button>
           <label>${name} <span style="color:#64748b;font-size:0.8em;">(${obj.unit})</span> <span style="color:#64748b;font-size:0.8em;">${obj.time}h</span></label>
           <select class="qty-in" data-cat="${cat}" data-prod="${name}">${Array.from({length:101},(_,i)=>`<option value="${i}">${i}</option>`).join('')}</select>
         </div>`;
@@ -551,7 +550,7 @@ document.querySelectorAll('#c-name,#c-phone,#c-email,#c-addr,#c-site,#c-type,#c-
   el.addEventListener('input', function() { saveFormData(); });
 });
 
-// --- PDF DEVIS (avec DOM pour mobile) ---
+// --- PDF DEVIS (corrigé, plus de page blanche) ---
 function generatePDF() {
   saveFolder();
   const c = getClientData();
@@ -565,7 +564,7 @@ function generatePDF() {
       totalTime += q * obj.time;
     }
   });
-  if(!rows) return alert("Le devis est vide !");
+  if(!rows) return showToast("Le devis est vide !", "#ef4444");
   const element = document.createElement('div');
   element.style.padding = "40px";
   element.style.fontFamily = "sans-serif";
@@ -603,12 +602,13 @@ function generatePDF() {
   `;
   element.style.display = "none";
   document.body.appendChild(element);
-  html2pdf().from(element).set({ margin: 0.5, filename: `Devis_ZELIO_${c.name}.pdf`, html2canvas: { scale: 2 } }).save().then(() => {
+  html2pdf().from(element).set({ margin: 0.5, filename: `Devis_ZELIO_${c.name.replace(/[^\w\d]/g,'_')}.pdf`, html2canvas: { scale: 2 } }).save().then(() => {
     document.body.removeChild(element);
+    showToast("PDF généré !");
   });
 }
 
-// --- PDF RAPPORT (avec DOM pour mobile) ---
+// --- PDF RAPPORT (corrigé, plus de page blanche) ---
 function generateReport() {
   saveFolder();
   const c = getClientData();
@@ -668,8 +668,9 @@ function generateReport() {
   `;
   element.style.display = "none";
   document.body.appendChild(element);
-  html2pdf().from(element).set({ margin: 0.5, filename: `Rapport_ZELIO_${c.name}.pdf`, html2canvas: { scale: 2 } }).save().then(() => {
+  html2pdf().from(element).set({ margin: 0.5, filename: `Rapport_ZELIO_${c.name.replace(/[^\w\d]/g,'_')}.pdf`, html2canvas: { scale: 2 } }).save().then(() => {
     document.body.removeChild(element);
+    showToast("PDF généré !");
   });
 }
 
@@ -689,7 +690,6 @@ function saveFolder() {
     photos: [...photos],
     date: new Date().toISOString()
   };
-  // Unicité par nom client + date
   let idx = folders.findIndex(f => f.client.name === c.name && f.client.addr === c.addr);
   if(idx !== -1) folders[idx] = folder;
   else folders.push(folder);
@@ -722,24 +722,23 @@ function loadFolder(idx) {
   document.getElementById('my-siret').value = f.artisan.siret;
   document.getElementById('my-addr').value = f.artisan.addr;
   document.getElementById('my-ins').value = f.artisan.ins;
-  // Quantités
   document.querySelectorAll('.qty-in').forEach(s => {
     const key = s.dataset.cat + '||' + s.dataset.prod;
     s.value = f.quantities[key] || 0;
   });
-  // Photos
   photos = [...f.photos];
   localStorage.setItem('zelio_photos', JSON.stringify(photos));
   showPhotoPreview();
   calculate();
   saveFormData();
-  alert("Dossier chargé !");
+  showToast("Dossier chargé !");
 }
 function deleteFolder(idx) {
   if(confirm("Supprimer ce dossier ?")) {
     folders.splice(idx,1);
     localStorage.setItem('zelio_folders', JSON.stringify(folders));
     renderFolders();
+    showToast("Dossier supprimé !");
   }
 }
 
@@ -767,7 +766,7 @@ function getArtisanData() {
 // --- EXPORT/IMPORT ---
 function exportData() {
   const data = {
-    database, photos, favorites, clients, folders, formData
+    database, photos, clients, folders, formData
   };
   const blob = new Blob([JSON.stringify(data)], {type: "application/json"});
   const url = URL.createObjectURL(blob);
@@ -776,6 +775,7 @@ function exportData() {
   a.download = "zelio_backup.json";
   a.click();
   URL.revokeObjectURL(url);
+  showToast("Export JSON OK !");
 }
 document.getElementById('import-file').addEventListener('change', function(e) {
   const file = e.target.files[0];
@@ -786,19 +786,17 @@ document.getElementById('import-file').addEventListener('change', function(e) {
       const data = JSON.parse(evt.target.result);
       if(data.database) database = data.database;
       if(data.photos) photos = data.photos;
-      if(data.favorites) favorites = data.favorites;
       if(data.clients) clients = data.clients;
       if(data.folders) folders = data.folders;
       if(data.formData) formData = data.formData;
       localStorage.setItem('zelio_full_v6', JSON.stringify(database));
       localStorage.setItem('zelio_photos', JSON.stringify(photos));
-      localStorage.setItem('zelio_favorites', JSON.stringify(favorites));
       localStorage.setItem('zelio_clients', JSON.stringify(clients));
       localStorage.setItem('zelio_folders', JSON.stringify(folders));
       localStorage.setItem('zelio_formdata', JSON.stringify(formData));
-      alert("Importation réussie !");
+      showToast("Importation réussie !");
       location.reload();
-    } catch(e) { alert("Fichier invalide."); }
+    } catch(e) { showToast("Fichier invalide.", "#ef4444"); }
   };
   reader.readAsText(file);
 });
