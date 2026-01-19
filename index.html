@@ -6,19 +6,69 @@
 <title>ZELIO - Solution Devis Électricité</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
-:root { --primary: #4f46e5; --bg: #f1f5f9; --card: #ffffff; --text: #1f2937; --accent: #10b981; }
+:root {
+  --primary: #4f46e5;
+  --bg: #f1f5f9;
+  --card: #ffffff;
+  --text: #1f2937;
+  --accent: #10b981;
+}
+body.dark {
+  --primary: #6366f1;
+  --bg: #18181b;
+  --card: #23232a;
+  --text: #f1f5f9;
+  --accent: #22d3ee;
+}
 * { box-sizing: border-box; }
-body { margin: 0; font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); padding-bottom: 180px; }
-.header-brand { background: white; padding: 1.5rem; text-align: center; border-bottom: 1px solid #e2e8f0; }
-.logo-text { font-size: 2.5rem; font-weight: 900; color: var(--primary); letter-spacing: -2px; margin: 0; }
-.logo-subtitle { font-size: 0.8rem; color: #64748b; text-transform: uppercase; letter-spacing: 2px; margin-top: -5px; }
-.nav-tabs { display: flex; justify-content: center; gap: 10px; background: white; padding: 0.8rem; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.05); flex-wrap: wrap;}
-.tab-btn { padding: 0.7rem 1.1rem; border: none; background: #e2e8f0; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.9rem; flex: 1 1 120px; min-width: 90px; max-width: 180px; }
+body {
+  margin: 0;
+  font-family: -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  padding-bottom: 200px;
+  transition: background 0.2s, color 0.2s;
+}
+.header-brand {
+  background: var(--card);
+  padding: 1.5rem;
+  text-align: center;
+  border-bottom: 1px solid #e2e8f0;
+  position: relative;
+}
+.logo-text {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: var(--primary);
+  letter-spacing: -2px;
+  margin: 0;
+}
+.logo-subtitle {
+  font-size: 0.8rem;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-top: -5px;
+}
+#logo-preview {
+  max-width: 80px; max-height: 60px; display: block; margin: 0 auto 5px auto;
+}
+#dark-toggle {
+  position: absolute; right: 20px; top: 20px; background: var(--bg); border: 1px solid #e2e8f0; border-radius: 50%; width: 38px; height: 38px; cursor: pointer; font-size: 1.3rem; color: var(--primary);
+}
+.nav-tabs {
+  display: flex; justify-content: center; gap: 10px; background: var(--card); padding: 0.8rem; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.05); flex-wrap: wrap;
+}
+.tab-btn {
+  padding: 0.7rem 1.1rem; border: none; background: #e2e8f0; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.9rem; flex: 1 1 120px; min-width: 90px; max-width: 180px;
+}
 .tab-btn.active { background: var(--primary); color: white; }
 .container { max-width: 1100px; margin: auto; padding: 1rem; }
 .page { display: none; }
 .page.active { display: block; }
-.form-section { background: white; padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; border: 1px solid #e2e8f0; }
+.form-section {
+  background: var(--card); padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; border: 1px solid #e2e8f0;
+}
 .form-section h2 { margin-top: 0; font-size: 1.1rem; color: var(--primary); margin-bottom: 1rem; }
 .grid-forms { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; }
 .form-group label { display: block; font-size: 0.75rem; font-weight: bold; margin-bottom: 4px; color: #64748b; }
@@ -28,21 +78,26 @@ textarea.full-width { resize: vertical; }
 .btn-small { padding: 6px 12px; font-size: 0.75rem; background: #cbd5e1; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
 .btn-danger { background: #fee2e2; color: #ef4444; }
 .accordion-item { background: var(--card); border-radius: 12px; margin-bottom: 0.6rem; overflow: hidden; border: 1px solid #e2e8f0; }
-.accordion-header { width: 100%; padding: 1.1rem; background: white; border: none; display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-weight: bold; text-align: left; }
+.accordion-header { width: 100%; padding: 1.1rem; background: var(--card); border: none; display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-weight: bold; text-align: left; }
 .accordion-header::after { content: '+'; color: var(--primary); font-size: 1.2rem; }
 .accordion-item.open .accordion-header { border-bottom: 1px solid #f1f5f9; color: var(--primary); }
 .accordion-item.open .accordion-header::after { content: '-'; }
 .accordion-content { display: none; padding: 1rem; background: #fafafa; }
 .accordion-item.open .accordion-content { display: block; }
 .grid-items { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 0.7rem; }
-.item { display: flex; align-items: center; justify-content: space-between; background: white; padding: 0.6rem 0.9rem; border-radius: 8px; border: 1px solid #e2e8f0; position:relative;}
+.item { display: flex; align-items: center; justify-content: space-between; background: var(--card); padding: 0.6rem 0.9rem; border-radius: 8px; border: 1px solid #e2e8f0; position:relative;}
 .item label { font-size: 0.85rem; flex: 1; margin-right: 10px; }
 select, input[type="number"] { width: 70px; padding: 0.4rem; border-radius: 6px; border: 1px solid #cbd5e1; }
-.footer { position: fixed; bottom: 0; width: 100%; background: white; padding: 1rem; display: flex; justify-content: space-around; align-items: center; box-shadow: 0 -5px 15px rgba(0,0,0,0.1); z-index: 1001; flex-wrap:wrap;}
+.footer { position: fixed; bottom: 0; width: 100%; background: var(--card); padding: 1rem; display: flex; justify-content: space-around; align-items: center; box-shadow: 0 -5px 15px rgba(0,0,0,0.1); z-index: 1001; flex-wrap:wrap;}
 .total-amount { font-size: 1.5rem; font-weight: 800; color: var(--primary); }
 .btn-generate { background: var(--primary); color: white; padding: 0.9rem 2rem; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; margin: 0 5px;}
 .footer-info { font-size: 1rem; color: #64748b; margin: 0 10px;}
 .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); background: #10b981; color: white; padding: 12px 24px; border-radius: 8px; font-size: 1rem; z-index: 2000; box-shadow: 0 2px 10px rgba(0,0,0,0.15);}
+#signature-pad { background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; }
+#signature-pad.dark { background: #23232a; }
+#faq-content { font-size: 0.95em; color: #64748b; }
+#faq-content h3 { color: var(--primary); margin-top: 1.2em; }
+#faq-content ul { margin: 0 0 1em 1.2em; }
 @media (max-width: 700px) {
   .footer { flex-direction: column; gap: 10px; }
   .btn-generate { width: 100%; }
@@ -58,8 +113,10 @@ select, input[type="number"] { width: 70px; padding: 0.4rem; border-radius: 6px;
 <body>
 
 <div class="header-brand">
+    <img id="logo-preview" src="" alt="Logo" style="display:none;">
     <h1 class="logo-text">ZELIO</h1>
     <div class="logo-subtitle">Logiciel de Chiffrage Professionnel</div>
+    <button id="dark-toggle" title="Mode sombre/clair" onclick="toggleDarkMode()">🌙</button>
 </div>
 
 <div class="nav-tabs" role="tablist">
@@ -68,6 +125,7 @@ select, input[type="number"] { width: 70px; padding: 0.4rem; border-radius: 6px;
   <button class="tab-btn" onclick="showPage('clients', event)" aria-selected="false" aria-controls="page-clients">👥 Clients</button>
   <button class="tab-btn" onclick="showPage('export', event)" aria-selected="false" aria-controls="page-export">💾 Sauvegarde</button>
   <button class="tab-btn" onclick="showPage('folders', event)" aria-selected="false" aria-controls="page-folders">📁 Dossiers</button>
+  <button class="tab-btn" onclick="showPage('faq', event)" aria-selected="false" aria-controls="page-faq">❓ Aide</button>
 </div>
 
 <div class="container">
@@ -78,9 +136,7 @@ select, input[type="number"] { width: 70px; padding: 0.4rem; border-radius: 6px;
       <div class="grid-forms">
         <div class="form-group">
           <label>Client enregistré</label>
-          <select id="client-select" class="full-width">
-            <option value="">-- Nouveau client --</option>
-          </select>
+          <select id="client-select" class="full-width"></select>
         </div>
         <div class="form-group"><label>Nom du Client</label><input type="text" id="c-name" class="full-width" placeholder="Ex: Jean Dupont" required></div>
         <div class="form-group"><label>Téléphone</label><input type="text" id="c-phone" class="full-width" placeholder="06 00 00 00 00" pattern="^0[1-9]([-. ]?[0-9]{2}){4}$"></div>
@@ -91,6 +147,10 @@ select, input[type="number"] { width: 70px; padding: 0.4rem; border-radius: 6px;
         <div class="form-group" style="grid-column:1/-1;">
           <label>Notes du chantier</label>
           <textarea id="c-notes" class="full-width" placeholder="Ex : accès difficile, présence d’animaux, etc." style="min-height:60px;"></textarea>
+        </div>
+        <div class="form-group" style="grid-column:1/-1;">
+          <label>Notes internes (non visibles sur le devis)</label>
+          <textarea id="c-notes-internal" class="full-width" placeholder="Notes privées, organisation, etc." style="min-height:40px;"></textarea>
         </div>
       </div>
       <button class="btn-small" onclick="saveClient()">💾 Enregistrer ce client</button>
@@ -103,6 +163,42 @@ select, input[type="number"] { width: 70px; padding: 0.4rem; border-radius: 6px;
       <button id="capture-btn" class="btn-small" style="display:none;">Capturer</button>
       <canvas id="photo-canvas" style="display:none;"></canvas>
       <div id="photo-preview" style="display:flex; gap:10px; flex-wrap:wrap;"></div>
+    </div>
+    <div class="form-section">
+      <h2>✍️ Signature du client</h2>
+      <canvas id="signature-pad" width="300" height="100"></canvas>
+      <button class="btn-small" onclick="clearSignature()">Effacer</button>
+    </div>
+    <div class="form-section">
+      <div class="grid-forms">
+        <div class="form-group">
+          <label>Statut du dossier</label>
+          <select id="folder-status" class="full-width">
+            <option value="Brouillon">Brouillon</option>
+            <option value="Envoyé">Envoyé</option>
+            <option value="Accepté">Accepté</option>
+            <option value="Refusé">Refusé</option>
+            <option value="Facturé">Facturé</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Remise (%)</label>
+          <input type="number" id="discount" class="full-width" min="0" max="100" value="0">
+        </div>
+        <div class="form-group">
+          <label>Acompte (€)</label>
+          <input type="number" id="deposit" class="full-width" min="0" value="0">
+        </div>
+        <div class="form-group">
+          <label>TVA (%)</label>
+          <select id="tva-rate" class="full-width">
+            <option value="20">20%</option>
+            <option value="10">10%</option>
+            <option value="5.5">5,5%</option>
+            <option value="0">0%</option>
+          </select>
+        </div>
+      </div>
     </div>
     <div class="accordion-controls">
         <button class="btn-small" onclick="toggleAll(true)">Tout ouvrir</button>
@@ -122,7 +218,37 @@ select, input[type="number"] { width: 70px; padding: 0.4rem; border-radius: 6px;
             <div class="form-group"><label>Adresse Pro</label><input type="text" id="my-addr" class="full-width"></div>
             <div class="form-group"><label>Assurance Décennale</label><input type="text" id="my-ins" class="full-width"></div>
         </div>
+        <div class="form-group" style="margin-top:1em;">
+          <label>Logo de l'entreprise (affiché sur les PDF)</label>
+          <input type="file" id="logo-upload" accept="image/*">
+        </div>
         <button class="btn-small btn-danger" style="margin-top:20px;" onclick="fullReset()">⚠️ Réinitialiser TOUTE la base de données</button>
+    </div>
+    <div class="form-section">
+      <h2>➕ Ajouter un produit ou une catégorie</h2>
+      <div class="grid-forms">
+        <div class="form-group">
+          <label>Catégorie</label>
+          <input type="text" id="new-cat" class="full-width" placeholder="Nouvelle ou existante">
+        </div>
+        <div class="form-group">
+          <label>Nom du produit</label>
+          <input type="text" id="new-prod" class="full-width" placeholder="Nom du produit">
+        </div>
+        <div class="form-group">
+          <label>Prix (€)</label>
+          <input type="number" id="new-price" class="full-width" min="0" value="0">
+        </div>
+        <div class="form-group">
+          <label>Temps (h)</label>
+          <input type="number" id="new-time" class="full-width" min="0" step="0.01" value="0">
+        </div>
+        <div class="form-group">
+          <label>Unité</label>
+          <input type="text" id="new-unit" class="full-width" placeholder="u, m, h...">
+        </div>
+      </div>
+      <button class="btn-small" onclick="addProduct()">Ajouter</button>
     </div>
     <div id="prices-accordion"></div>
   </div>
@@ -131,7 +257,9 @@ select, input[type="number"] { width: 70px; padding: 0.4rem; border-radius: 6px;
   <div id="page-clients" class="page">
     <div class="form-section">
       <h2>👥 Mes Clients Enregistrés</h2>
+      <input type="text" id="search-client" class="full-width" placeholder="Recherche client...">
       <div id="clients-list"></div>
+      <button class="btn-small" onclick="exportClientsCSV()">Exporter clients (CSV)</button>
     </div>
   </div>
 
@@ -141,6 +269,8 @@ select, input[type="number"] { width: 70px; padding: 0.4rem; border-radius: 6px;
       <h2>💾 Sauvegarde / Restauration</h2>
       <button class="btn-small" onclick="exportData()">Exporter la base (JSON)</button>
       <input type="file" id="import-file" accept=".json" style="margin-top:10px;">
+      <button class="btn-small" onclick="exportFoldersCSV()">Exporter dossiers (CSV)</button>
+      <button class="btn-small" onclick="exportProductsCSV()">Exporter produits (CSV)</button>
       <p style="font-size:0.9em; color:#64748b;">Exportez ou importez toutes vos données (produits, clients, photos, dossiers, etc.)</p>
     </div>
   </div>
@@ -149,7 +279,50 @@ select, input[type="number"] { width: 70px; padding: 0.4rem; border-radius: 6px;
   <div id="page-folders" class="page">
     <div class="form-section">
       <h2>📁 Dossiers Clients</h2>
+      <input type="text" id="search-folder" class="full-width" placeholder="Recherche dossier...">
       <div id="folders-list"></div>
+      <button class="btn-small" onclick="exportFoldersCSV()">Exporter dossiers (CSV)</button>
+    </div>
+  </div>
+
+  <!-- PAGE FAQ -->
+  <div id="page-faq" class="page">
+    <div class="form-section">
+      <h2>❓ Aide & FAQ</h2>
+      <div id="faq-content">
+        <h3>Comment ajouter un produit ou une catégorie ?</h3>
+        <ul>
+          <li>Allez dans l’onglet <b>Paramètres</b> puis remplissez le formulaire “Ajouter un produit ou une catégorie”.</li>
+        </ul>
+        <h3>Comment changer le logo de l’entreprise ?</h3>
+        <ul>
+          <li>Dans <b>Paramètres</b>, importez votre logo (format PNG/JPG, max 200ko recommandé).</li>
+        </ul>
+        <h3>Comment utiliser la signature électronique ?</h3>
+        <ul>
+          <li>Dans l’onglet <b>Devis</b>, signez sur le cadre prévu. La signature sera intégrée dans le PDF.</li>
+        </ul>
+        <h3>Comment appliquer une remise ou un acompte ?</h3>
+        <ul>
+          <li>Dans <b>Devis</b>, renseignez le pourcentage de remise ou le montant d’acompte.</li>
+        </ul>
+        <h3>Comment changer le taux de TVA ?</h3>
+        <ul>
+          <li>Dans <b>Devis</b>, choisissez le taux de TVA souhaité.</li>
+        </ul>
+        <h3>Comment filtrer ou rechercher un client/dossier ?</h3>
+        <ul>
+          <li>Utilisez le champ de recherche dans l’onglet <b>Clients</b> ou <b>Dossiers</b>.</li>
+        </ul>
+        <h3>Comment activer le mode sombre ?</h3>
+        <ul>
+          <li>Cliquez sur l’icône 🌙 en haut à droite.</li>
+        </ul>
+        <h3>Comment exporter mes données ?</h3>
+        <ul>
+          <li>Dans <b>Sauvegarde</b>, exportez en JSON ou CSV.</li>
+        </ul>
+      </div>
     </div>
   </div>
 </div>
@@ -173,7 +346,37 @@ function showToast(msg, color="#10b981") {
   setTimeout(()=>{ t.style.display="none"; }, 2200);
 }
 
+// --- MODE SOMBRE ---
+function toggleDarkMode() {
+  document.body.classList.toggle('dark');
+  localStorage.setItem('zelio_dark', document.body.classList.contains('dark') ? "1" : "0");
+  document.getElementById('signature-pad').className = document.body.classList.contains('dark') ? "dark" : "";
+}
+if(localStorage.getItem('zelio_dark')==="1") document.body.classList.add('dark');
+
+// --- LOGO ENTREPRISE ---
+let logoData = localStorage.getItem('zelio_logo') || "";
+function updateLogoPreview() {
+  const img = document.getElementById('logo-preview');
+  if(logoData) { img.src = logoData; img.style.display = "block"; }
+  else { img.style.display = "none"; }
+}
+updateLogoPreview();
+document.getElementById('logo-upload').addEventListener('change', function(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    logoData = evt.target.result;
+    localStorage.setItem('zelio_logo', logoData);
+    updateLogoPreview();
+    showToast("Logo enregistré !");
+  };
+  reader.readAsDataURL(file);
+});
+
 // --- BASE DE DONNÉES AVEC UNITÉS ---
+// !! COLLE ICI TA BASE DE DONNÉES PRODUITS/CATÉGORIES DE LA V2 !!
 const defaultDatabase = {
   "⚡ Éclairage Intérieur": {
     "Spot encastré LED": { price: 45, time: 0.5, unit: "u" },
@@ -271,6 +474,7 @@ let photos = JSON.parse(localStorage.getItem('zelio_photos')) || [];
 let clients = JSON.parse(localStorage.getItem('zelio_clients')) || [];
 let folders = JSON.parse(localStorage.getItem('zelio_folders')) || [];
 let formData = JSON.parse(localStorage.getItem('zelio_formdata')) || {};
+let signatureData = localStorage.getItem('zelio_signature') || "";
 
 // --- NAVIGATION ---
 function showPage(id, event) {
@@ -281,6 +485,7 @@ function showPage(id, event) {
   if(id === 'clients') renderClients();
   if(id === 'export') document.getElementById('import-file').value = '';
   if(id === 'folders') renderFolders();
+  if(id === 'faq') {} // rien
 }
 
 // --- ACCORDÉON ---
@@ -298,7 +503,8 @@ function saveClient() {
     addr: document.getElementById('c-addr').value.trim(),
     site: document.getElementById('c-site').value.trim(),
     type: document.getElementById('c-type').value.trim(),
-    notes: document.getElementById('c-notes').value.trim()
+    notes: document.getElementById('c-notes').value.trim(),
+    notes_internal: document.getElementById('c-notes-internal').value.trim()
   };
   if(!c.name) return showToast("Nom du client obligatoire !", "#ef4444");
   if(c.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(c.email)) return showToast("Email invalide !", "#ef4444");
@@ -329,6 +535,7 @@ document.getElementById('client-select').addEventListener('change', function() {
     document.getElementById('c-site').value = "";
     document.getElementById('c-type').value = "";
     document.getElementById('c-notes').value = "";
+    document.getElementById('c-notes-internal').value = "";
     saveFormData();
     return;
   }
@@ -340,13 +547,16 @@ document.getElementById('client-select').addEventListener('change', function() {
   document.getElementById('c-site').value = c.site;
   document.getElementById('c-type').value = c.type;
   document.getElementById('c-notes').value = c.notes;
+  document.getElementById('c-notes-internal').value = c.notes_internal || "";
   saveFormData();
 });
 function renderClients() {
   const clDiv = document.getElementById('clients-list');
+  let filter = document.getElementById('search-client').value.toLowerCase();
   clDiv.innerHTML = '';
-  if(!clients.length) { clDiv.innerHTML = "<p style='color:#888;'>Aucun client enregistré.</p>"; return; }
-  clients.forEach((c, i) => {
+  let filtered = clients.filter(c => c.name.toLowerCase().includes(filter) || c.addr.toLowerCase().includes(filter) || c.email.toLowerCase().includes(filter));
+  if(!filtered.length) { clDiv.innerHTML = "<p style='color:#888;'>Aucun client enregistré.</p>"; return; }
+  filtered.forEach((c, i) => {
     clDiv.innerHTML += `
       <div class="item">
         <label><b>${c.name}</b> - ${c.phone} - ${c.email}</label>
@@ -364,6 +574,7 @@ function deleteClient(idx) {
     showToast("Client supprimé !");
   }
 }
+document.getElementById('search-client').addEventListener('input', renderClients);
 
 // --- PHOTOS (compression avant stockage, max 10 photos) ---
 document.getElementById('site-photos').addEventListener('change', function(e) {
@@ -450,6 +661,65 @@ function takePhoto() {
     });
 }
 
+// --- SIGNATURE ÉLECTRONIQUE ---
+const sigPad = document.getElementById('signature-pad');
+const sigCtx = sigPad.getContext('2d');
+let drawing = false;
+sigPad.addEventListener('mousedown', e => { drawing = true; sigCtx.beginPath(); sigCtx.moveTo(e.offsetX, e.offsetY); });
+sigPad.addEventListener('mousemove', e => { if(drawing) { sigCtx.lineTo(e.offsetX, e.offsetY); sigCtx.stroke(); } });
+sigPad.addEventListener('mouseup', () => { drawing = false; saveSignature(); });
+sigPad.addEventListener('mouseleave', () => { drawing = false; });
+sigPad.addEventListener('touchstart', function(e){ e.preventDefault(); drawing = true; const r = sigPad.getBoundingClientRect(); const t = e.touches[0]; sigCtx.beginPath(); sigCtx.moveTo(t.clientX-r.left, t.clientY-r.top); });
+sigPad.addEventListener('touchmove', function(e){ e.preventDefault(); if(drawing){ const r = sigPad.getBoundingClientRect(); const t = e.touches[0]; sigCtx.lineTo(t.clientX-r.left, t.clientY-r.top); sigCtx.stroke(); } });
+sigPad.addEventListener('touchend', function(){ drawing = false; saveSignature(); });
+function clearSignature() { sigCtx.clearRect(0,0,sigPad.width,sigPad.height); saveSignature(); }
+function saveSignature() {
+  signatureData = sigPad.toDataURL("image/png");
+  localStorage.setItem('zelio_signature', signatureData);
+}
+function loadSignature() {
+  if(signatureData) {
+    const img = new Image();
+    img.onload = function() { sigCtx.clearRect(0,0,sigPad.width,sigPad.height); sigCtx.drawImage(img,0,0,sigPad.width,sigPad.height); };
+    img.src = signatureData;
+  } else {
+    sigCtx.clearRect(0,0,sigPad.width,sigPad.height);
+  }
+}
+loadSignature();
+
+// --- AJOUT DE PRODUITS/CATÉGORIES ---
+function addProduct() {
+  const cat = document.getElementById('new-cat').value.trim();
+  const prod = document.getElementById('new-prod').value.trim();
+  const price = parseFloat(document.getElementById('new-price').value);
+  const time = parseFloat(document.getElementById('new-time').value);
+  const unit = document.getElementById('new-unit').value.trim() || "u";
+  if(!cat || !prod) return showToast("Catégorie et nom du produit obligatoires !", "#ef4444");
+  if(!database[cat]) database[cat] = {};
+  if(database[cat][prod]) return showToast("Produit déjà existant !", "#ef4444");
+  database[cat][prod] = { price, time, unit };
+  localStorage.setItem('zelio_full_v6', JSON.stringify(database));
+  render();
+  showToast("Produit ajouté !");
+  document.getElementById('new-cat').value = "";
+  document.getElementById('new-prod').value = "";
+  document.getElementById('new-price').value = 0;
+  document.getElementById('new-time').value = 0;
+  document.getElementById('new-unit').value = "";
+}
+
+// --- SUPPRESSION DE PRODUIT ---
+function deleteProduct(cat, prod) {
+  if(confirm("Supprimer ce produit ?")) {
+    delete database[cat][prod];
+    if(Object.keys(database[cat]).length===0) delete database[cat];
+    localStorage.setItem('zelio_full_v6', JSON.stringify(database));
+    render();
+    showToast("Produit supprimé !");
+  }
+}
+
 // --- RENDU DYNAMIQUE ---
 function render() {
   const configA = document.getElementById('config-accordion');
@@ -470,6 +740,7 @@ function render() {
           <label>${name} <span style="color:#64748b;font-size:0.8em;">(${obj.unit})</span> <span style="color:#64748b;font-size:0.8em;">${obj.time}h</span></label>
           <input type="number" value="${obj.price}" class="price-in" data-cat="${cat}" data-prod="${name}">
           <input type="number" value="${obj.time}" step="0.01" class="time-in" data-cat="${cat}" data-prod="${name}" style="width:60px;" title="Durée estimée (h)">
+          <button class="btn-small btn-danger" onclick="deleteProduct('${cat.replace(/'/g,"\\'")}', '${name.replace(/'/g,"\\'")}')">Supprimer</button>
         </div>`;
     }
   }
@@ -503,7 +774,18 @@ function calculate() {
     total += q * obj.price;
     totalTime += q * obj.time;
   });
-  document.getElementById('grand-total').innerText = total.toLocaleString();
+  // Remise
+  let discount = parseFloat(document.getElementById('discount').value) || 0;
+  let totalRemise = total * (discount/100);
+  // Total après remise
+  let totalAfterRemise = total - totalRemise;
+  // TVA
+  let tva = parseFloat(document.getElementById('tva-rate').value) || 20;
+  let tvaAmount = totalAfterRemise * (tva/100);
+  // Acompte
+  let deposit = parseFloat(document.getElementById('deposit').value) || 0;
+  // Affichage
+  document.getElementById('grand-total').innerText = totalAfterRemise.toLocaleString();
   document.getElementById('grand-time').innerText = totalTime.toFixed(2);
 }
 calculate();
@@ -518,10 +800,15 @@ function saveFormData() {
     c_site: document.getElementById('c-site').value,
     c_type: document.getElementById('c-type').value,
     c_notes: document.getElementById('c-notes').value,
+    c_notes_internal: document.getElementById('c-notes-internal').value,
     my_name: document.getElementById('my-name').value,
     my_siret: document.getElementById('my-siret').value,
     my_addr: document.getElementById('my-addr').value,
     my_ins: document.getElementById('my-ins').value,
+    discount: document.getElementById('discount').value,
+    deposit: document.getElementById('deposit').value,
+    tva: document.getElementById('tva-rate').value,
+    folder_status: document.getElementById('folder-status').value,
     quantities: {}
   };
   document.querySelectorAll('.qty-in').forEach(s => {
@@ -539,39 +826,68 @@ function loadFormData() {
   document.getElementById('c-site').value = formData.c_site || "";
   document.getElementById('c-type').value = formData.c_type || "";
   document.getElementById('c-notes').value = formData.c_notes || "";
+  document.getElementById('c-notes-internal').value = formData.c_notes_internal || "";
   document.getElementById('my-name').value = formData.my_name || "";
   document.getElementById('my-siret').value = formData.my_siret || "";
   document.getElementById('my-addr').value = formData.my_addr || "";
   document.getElementById('my-ins').value = formData.my_ins || "";
+  document.getElementById('discount').value = formData.discount || 0;
+  document.getElementById('deposit').value = formData.deposit || 0;
+  document.getElementById('tva-rate').value = formData.tva || 20;
+  document.getElementById('folder-status').value = formData.folder_status || "Brouillon";
   // Les quantités sont rechargées dans render()
 }
 loadFormData();
-document.querySelectorAll('#c-name,#c-phone,#c-email,#c-addr,#c-site,#c-type,#c-notes,#my-name,#my-siret,#my-addr,#my-ins').forEach(el => {
-  el.addEventListener('input', function() { saveFormData(); });
+document.querySelectorAll('#c-name,#c-phone,#c-email,#c-addr,#c-site,#c-type,#c-notes,#c-notes-internal,#my-name,#my-siret,#my-addr,#my-ins,#discount,#deposit,#tva-rate,#folder-status').forEach(el => {
+  el.addEventListener('input', function() { saveFormData(); calculate(); });
 });
 
-// --- PDF DEVIS (corrigé, plus de page blanche) ---
+// --- PDF DEVIS (avec signature, logo, remise, acompte, tva, statut) ---
 function generatePDF() {
   saveFolder();
   const c = getClientData();
   const m = getArtisanData();
-  let rows = "", totalTime = 0;
+  let rows = "", totalTime = 0, total = 0;
   document.querySelectorAll('.qty-in').forEach(s => {
     const q = parseInt(s.value);
     if(q > 0) {
       const obj = database[s.dataset.cat][s.dataset.prod];
       rows += `<tr><td style="padding:10px; border-bottom:1px solid #eee;">${s.dataset.prod} <span style='color:#64748b;font-size:0.8em;'>(${obj.unit})</span></td><td style="text-align:center; border-bottom:1px solid #eee;">${q}</td><td style="text-align:right; border-bottom:1px solid #eee;">${obj.price}€</td><td style="text-align:right; border-bottom:1px solid #eee;">${q*obj.price}€</td></tr>`;
       totalTime += q * obj.time;
+      total += q * obj.price;
     }
   });
   if(!rows) return showToast("Le devis est vide !", "#ef4444");
+  // Remise, acompte, tva
+  let discount = parseFloat(document.getElementById('discount').value) || 0;
+  let totalRemise = total * (discount/100);
+  let totalAfterRemise = total - totalRemise;
+  let tva = parseFloat(document.getElementById('tva-rate').value) || 20;
+  let tvaAmount = totalAfterRemise * (tva/100);
+  let deposit = parseFloat(document.getElementById('deposit').value) || 0;
+  let totalTTC = totalAfterRemise + tvaAmount;
+  let reste = totalTTC - deposit;
+  // Signature
+  let sigImg = signatureData ? `<img src="${signatureData}" style="max-width:220px; max-height:80px; border:1px solid #eee; border-radius:6px;">` : "<span style='color:#888;'>Non signée</span>";
+  // Logo
+  let logoHtml = logoData ? `<img src="${logoData}" style="max-width:90px; max-height:60px; margin-bottom:10px;">` : "";
+  // Statut
+  let statut = document.getElementById('folder-status').value;
   const element = document.createElement('div');
   element.style.padding = "40px";
   element.style.fontFamily = "sans-serif";
   element.innerHTML = `
     <div style="display:flex; justify-content:space-between; border-bottom:3px solid #4f46e5; padding-bottom:15px; margin-bottom:25px;">
-        <div><h1 style="color:#4f46e5; margin:0;">${m.name || 'DEVIS ÉLECTRIQUE'}</h1><p style="font-size:12px; margin-top:5px;">SIRET: ${m.siret}<br>${m.addr}</p></div>
-        <div style="text-align:right;"><h2>DEVIS N° ${Math.floor(Math.random()*1000)}</h2><p>Date: ${new Date().toLocaleDateString()}</p></div>
+        <div>
+          ${logoHtml}
+          <h1 style="color:#4f46e5; margin:0;">${m.name || 'DEVIS ÉLECTRIQUE'}</h1>
+          <p style="font-size:12px; margin-top:5px;">SIRET: ${m.siret}<br>${m.addr}</p>
+        </div>
+        <div style="text-align:right;">
+          <h2>DEVIS N° ${Math.floor(Math.random()*1000)}</h2>
+          <p>Date: ${new Date().toLocaleDateString()}</p>
+          <span style="background:#e0e7ff; color:#4f46e5; padding:4px 10px; border-radius:6px; font-size:13px;">${statut}</span>
+        </div>
     </div>
     <div style="display:flex; justify-content:space-between; margin-bottom:35px; font-size:14px;">
         <div style="width:48%; background:#f8fafc; padding:20px; border-radius:10px;">
@@ -590,14 +906,19 @@ function generatePDF() {
         ${rows}
     </table>
     <div style="text-align:right; margin-top:40px;">
-        <p style="margin:5px 0;">Total HT : ${document.getElementById('grand-total').innerText} €</p>
-        <p style="margin:5px 0;">TVA (20%) : ${(parseFloat(document.getElementById('grand-total').innerText.replace(/\s/g,''))*0.2).toFixed(2)} €</p>
-        <h2 style="color:#4f46e5; margin-top:10px;">TOTAL TTC : ${(parseFloat(document.getElementById('grand-total').innerText.replace(/\s/g,''))*1.2).toFixed(2)} €</h2>
+        <p style="margin:5px 0;">Total HT : ${total.toLocaleString()} €</p>
+        <p style="margin:5px 0;">Remise : ${discount}% (-${totalRemise.toFixed(2)} €)</p>
+        <p style="margin:5px 0;">Total HT après remise : ${totalAfterRemise.toFixed(2)} €</p>
+        <p style="margin:5px 0;">TVA (${tva}%) : ${tvaAmount.toFixed(2)} €</p>
+        <h2 style="color:#4f46e5; margin-top:10px;">TOTAL TTC : ${totalTTC.toFixed(2)} €</h2>
+        <p style="margin:5px 0;">Acompte : ${deposit.toFixed(2)} €</p>
+        <p style="margin:5px 0;">Reste à payer : ${reste.toFixed(2)} €</p>
         <p style="margin:5px 0;">Temps estimé : ${totalTime.toFixed(2)} h</p>
     </div>
     <div style="margin-top:50px; font-size:11px; color:#666; border-top:1px solid #eee; padding-top:15px;">
         <p><strong>Conditions :</strong> Valable 30 jours. Assurance Décennale : ${m.ins}</p>
         <p style="margin-top:20px;">Bon pour accord le : ____ / ____ / 20____ &nbsp;&nbsp;&nbsp; Cachet et Signature :</p>
+        <div>${sigImg}</div>
     </div>
   `;
   element.style.display = "none";
@@ -608,18 +929,19 @@ function generatePDF() {
   });
 }
 
-// --- PDF RAPPORT (corrigé, plus de page blanche) ---
+// --- PDF RAPPORT (idem, + photos, + notes internes) ---
 function generateReport() {
   saveFolder();
   const c = getClientData();
   const m = getArtisanData();
-  let rows = "", totalTime = 0;
+  let rows = "", totalTime = 0, total = 0;
   document.querySelectorAll('.qty-in').forEach(s => {
     const q = parseInt(s.value);
     if(q > 0) {
       const obj = database[s.dataset.cat][s.dataset.prod];
       rows += `<tr><td style="padding:10px; border-bottom:1px solid #eee;">${s.dataset.prod} <span style='color:#64748b;font-size:0.8em;'>(${obj.unit})</span></td><td style="text-align:center; border-bottom:1px solid #eee;">${q}</td><td style="text-align:right; border-bottom:1px solid #eee;">${obj.price}€</td><td style="text-align:right; border-bottom:1px solid #eee;">${q*obj.price}€</td></tr>`;
       totalTime += q * obj.time;
+      total += q * obj.price;
     }
   });
   let photosHtml = "";
@@ -628,13 +950,36 @@ function generateReport() {
       photos.map(src => `<img src="${src}" style="width:180px; height:130px; object-fit:cover; border-radius:8px; border:1px solid #ccc;">`).join('') +
       `</div>`;
   }
+  // Remise, acompte, tva
+  let discount = parseFloat(document.getElementById('discount').value) || 0;
+  let totalRemise = total * (discount/100);
+  let totalAfterRemise = total - totalRemise;
+  let tva = parseFloat(document.getElementById('tva-rate').value) || 20;
+  let tvaAmount = totalAfterRemise * (tva/100);
+  let deposit = parseFloat(document.getElementById('deposit').value) || 0;
+  let totalTTC = totalAfterRemise + tvaAmount;
+  let reste = totalTTC - deposit;
+  // Signature
+  let sigImg = signatureData ? `<img src="${signatureData}" style="max-width:220px; max-height:80px; border:1px solid #eee; border-radius:6px;">` : "<span style='color:#888;'>Non signée</span>";
+  // Logo
+  let logoHtml = logoData ? `<img src="${logoData}" style="max-width:90px; max-height:60px; margin-bottom:10px;">` : "";
+  // Statut
+  let statut = document.getElementById('folder-status').value;
   const element = document.createElement('div');
   element.style.padding = "40px";
   element.style.fontFamily = "sans-serif";
   element.innerHTML = `
     <div style="display:flex; justify-content:space-between; border-bottom:3px solid #4f46e5; padding-bottom:15px; margin-bottom:25px;">
-        <div><h1 style="color:#4f46e5; margin:0;">${m.name || 'RAPPORT DE CHANTIER'}</h1><p style="font-size:12px; margin-top:5px;">SIRET: ${m.siret}<br>${m.addr}</p></div>
-        <div style="text-align:right;"><h2>RAPPORT N° ${Math.floor(Math.random()*1000)}</h2><p>Date: ${new Date().toLocaleDateString()}</p></div>
+        <div>
+          ${logoHtml}
+          <h1 style="color:#4f46e5; margin:0;">${m.name || 'RAPPORT DE CHANTIER'}</h1>
+          <p style="font-size:12px; margin-top:5px;">SIRET: ${m.siret}<br>${m.addr}</p>
+        </div>
+        <div style="text-align:right;">
+          <h2>RAPPORT N° ${Math.floor(Math.random()*1000)}</h2>
+          <p>Date: ${new Date().toLocaleDateString()}</p>
+          <span style="background:#e0e7ff; color:#4f46e5; padding:4px 10px; border-radius:6px; font-size:13px;">${statut}</span>
+        </div>
     </div>
     <div style="display:flex; justify-content:space-between; margin-bottom:35px; font-size:14px;">
         <div style="width:48%; background:#f8fafc; padding:20px; border-radius:10px;">
@@ -648,6 +993,8 @@ function generateReport() {
     ${photosHtml || "<p style='color:#888;'>Aucune photo ajoutée.</p>"}
     <h2 style="color:#4f46e5; margin-top:30px;">Notes du Chantier</h2>
     <p style="background:#f8fafc; padding:10px; border-radius:8px; color:#333;">${c.notes || "Aucune note."}</p>
+    <h2 style="color:#4f46e5; margin-top:30px;">Notes internes</h2>
+    <p style="background:#f1f5f9; padding:10px; border-radius:8px; color:#888;">${c.notes_internal || "Aucune note interne."}</p>
     <h2 style="color:#4f46e5; margin-top:30px;">Liste des Prestations</h2>
     <table style="width:100%; border-collapse:collapse; font-size:13px;">
         <tr style="background:#4f46e5; color:white;">
@@ -656,14 +1003,19 @@ function generateReport() {
         ${rows || "<tr><td colspan='4' style='text-align:center; color:#888; padding:20px;'>Aucune prestation sélectionnée.</td></tr>"}
     </table>
     <div style="text-align:right; margin-top:40px;">
-        <p style="margin:5px 0;">Total HT : ${document.getElementById('grand-total').innerText} €</p>
-        <p style="margin:5px 0;">TVA (20%) : ${(parseFloat(document.getElementById('grand-total').innerText.replace(/\s/g,''))*0.2).toFixed(2)} €</p>
-        <h2 style="color:#4f46e5; margin-top:10px;">TOTAL TTC : ${(parseFloat(document.getElementById('grand-total').innerText.replace(/\s/g,''))*1.2).toFixed(2)} €</h2>
+        <p style="margin:5px 0;">Total HT : ${total.toLocaleString()} €</p>
+        <p style="margin:5px 0;">Remise : ${discount}% (-${totalRemise.toFixed(2)} €)</p>
+        <p style="margin:5px 0;">Total HT après remise : ${totalAfterRemise.toFixed(2)} €</p>
+        <p style="margin:5px 0;">TVA (${tva}%) : ${tvaAmount.toFixed(2)} €</p>
+        <h2 style="color:#4f46e5; margin-top:10px;">TOTAL TTC : ${totalTTC.toFixed(2)} €</h2>
+        <p style="margin:5px 0;">Acompte : ${deposit.toFixed(2)} €</p>
+        <p style="margin:5px 0;">Reste à payer : ${reste.toFixed(2)} €</p>
         <p style="margin:5px 0;">Temps estimé : ${totalTime.toFixed(2)} h</p>
     </div>
     <div style="margin-top:50px; font-size:11px; color:#666; border-top:1px solid #eee; padding-top:15px;">
         <p><strong>Conditions :</strong> Valable 30 jours. Assurance Décennale : ${m.ins}</p>
         <p style="margin-top:20px;">Signature du client :</p>
+        <div>${sigImg}</div>
     </div>
   `;
   element.style.display = "none";
@@ -688,7 +1040,12 @@ function saveFolder() {
     artisan: m,
     quantities,
     photos: [...photos],
-    date: new Date().toISOString()
+    date: new Date().toISOString(),
+    signature: signatureData,
+    discount: document.getElementById('discount').value,
+    deposit: document.getElementById('deposit').value,
+    tva: document.getElementById('tva-rate').value,
+    status: document.getElementById('folder-status').value
   };
   let idx = folders.findIndex(f => f.client.name === c.name && f.client.addr === c.addr);
   if(idx !== -1) folders[idx] = folder;
@@ -697,12 +1054,14 @@ function saveFolder() {
 }
 function renderFolders() {
   const fDiv = document.getElementById('folders-list');
+  let filter = document.getElementById('search-folder').value.toLowerCase();
   fDiv.innerHTML = '';
-  if(!folders.length) { fDiv.innerHTML = "<p style='color:#888;'>Aucun dossier sauvegardé.</p>"; return; }
-  folders.forEach((f, i) => {
+  let filtered = folders.filter(f => f.client.name.toLowerCase().includes(filter) || f.client.addr.toLowerCase().includes(filter) || (f.status||"").toLowerCase().includes(filter));
+  if(!filtered.length) { fDiv.innerHTML = "<p style='color:#888;'>Aucun dossier sauvegardé.</p>"; return; }
+  filtered.forEach((f, i) => {
     fDiv.innerHTML += `
       <div class="item">
-        <label><b>${f.client.name}</b> - ${f.client.addr} <span style="color:#64748b;font-size:0.8em;">(${new Date(f.date).toLocaleDateString()})</span></label>
+        <label><b>${f.client.name}</b> - ${f.client.addr} <span style="color:#64748b;font-size:0.8em;">(${new Date(f.date).toLocaleDateString()})</span> <span style="background:#e0e7ff; color:#4f46e5; padding:2px 8px; border-radius:6px; font-size:12px;">${f.status||"Brouillon"}</span></label>
         <button class="btn-small" onclick="loadFolder(${i})">Charger</button>
         <button class="btn-small btn-danger" onclick="deleteFolder(${i})">Supprimer</button>
       </div>
@@ -718,10 +1077,15 @@ function loadFolder(idx) {
   document.getElementById('c-site').value = f.client.site;
   document.getElementById('c-type').value = f.client.type;
   document.getElementById('c-notes').value = f.client.notes;
+  document.getElementById('c-notes-internal').value = f.client.notes_internal || "";
   document.getElementById('my-name').value = f.artisan.name;
   document.getElementById('my-siret').value = f.artisan.siret;
   document.getElementById('my-addr').value = f.artisan.addr;
   document.getElementById('my-ins').value = f.artisan.ins;
+  document.getElementById('discount').value = f.discount || 0;
+  document.getElementById('deposit').value = f.deposit || 0;
+  document.getElementById('tva-rate').value = f.tva || 20;
+  document.getElementById('folder-status').value = f.status || "Brouillon";
   document.querySelectorAll('.qty-in').forEach(s => {
     const key = s.dataset.cat + '||' + s.dataset.prod;
     s.value = f.quantities[key] || 0;
@@ -729,6 +1093,9 @@ function loadFolder(idx) {
   photos = [...f.photos];
   localStorage.setItem('zelio_photos', JSON.stringify(photos));
   showPhotoPreview();
+  signatureData = f.signature || "";
+  localStorage.setItem('zelio_signature', signatureData);
+  loadSignature();
   calculate();
   saveFormData();
   showToast("Dossier chargé !");
@@ -741,6 +1108,7 @@ function deleteFolder(idx) {
     showToast("Dossier supprimé !");
   }
 }
+document.getElementById('search-folder').addEventListener('input', renderFolders);
 
 // --- OUTILS ---
 function getClientData() {
@@ -751,7 +1119,8 @@ function getClientData() {
     addr: document.getElementById('c-addr').value,
     site: document.getElementById('c-site').value,
     type: document.getElementById('c-type').value,
-    notes: document.getElementById('c-notes').value
+    notes: document.getElementById('c-notes').value,
+    notes_internal: document.getElementById('c-notes-internal').value
   };
 }
 function getArtisanData() {
@@ -766,7 +1135,7 @@ function getArtisanData() {
 // --- EXPORT/IMPORT ---
 function exportData() {
   const data = {
-    database, photos, clients, folders, formData
+    database, photos, clients, folders, formData, logoData
   };
   const blob = new Blob([JSON.stringify(data)], {type: "application/json"});
   const url = URL.createObjectURL(blob);
@@ -789,6 +1158,7 @@ document.getElementById('import-file').addEventListener('change', function(e) {
       if(data.clients) clients = data.clients;
       if(data.folders) folders = data.folders;
       if(data.formData) formData = data.formData;
+      if(data.logoData) { logoData = data.logoData; localStorage.setItem('zelio_logo', logoData); }
       localStorage.setItem('zelio_full_v6', JSON.stringify(database));
       localStorage.setItem('zelio_photos', JSON.stringify(photos));
       localStorage.setItem('zelio_clients', JSON.stringify(clients));
@@ -801,9 +1171,55 @@ document.getElementById('import-file').addEventListener('change', function(e) {
   reader.readAsText(file);
 });
 
+// --- EXPORT CSV ---
+function exportClientsCSV() {
+  let csv = "Nom;Téléphone;Email;Adresse;Site;Type;Notes;Notes internes\n";
+  clients.forEach(c => {
+    csv += `"${c.name}";"${c.phone}";"${c.email}";"${c.addr}";"${c.site}";"${c.type}";"${c.notes}";"${c.notes_internal||""}"\n`;
+  });
+  downloadCSV(csv, "clients_zelio.csv");
+}
+function exportFoldersCSV() {
+  let csv = "Nom client;Adresse;Date;Statut;Total HT;Remise (%);Acompte;TVA (%);Notes;Notes internes\n";
+  folders.forEach(f => {
+    let total = 0;
+    for(let k in f.quantities) {
+      let [cat, prod] = k.split('||');
+      let q = parseInt(f.quantities[k]);
+      if(q>0) total += (database[cat] && database[cat][prod]) ? database[cat][prod].price*q : 0;
+    }
+    csv += `"${f.client.name}";"${f.client.addr}";"${new Date(f.date).toLocaleDateString()}";"${f.status||"Brouillon"}";"${total}";"${f.discount||0}";"${f.deposit||0}";"${f.tva||20}";"${f.client.notes||""}";"${f.client.notes_internal||""}"\n`;
+  });
+  downloadCSV(csv, "dossiers_zelio.csv");
+}
+function exportProductsCSV() {
+  let csv = "Catégorie;Produit;Prix;Temps;Unité\n";
+  for(let cat in database) {
+    for(let prod in database[cat]) {
+      let o = database[cat][prod];
+      csv += `"${cat}";"${prod}";"${o.price}";"${o.time}";"${o.unit}"\n`;
+    }
+  }
+  downloadCSV(csv, "produits_zelio.csv");
+}
+function downloadCSV(csv, filename) {
+  const blob = new Blob([csv], {type: "text/csv"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast("Export CSV OK !");
+}
+
 // --- INIT ---
 renderClientSelect();
 showPhotoPreview();
+renderClients();
+renderFolders();
+updateLogoPreview();
+loadSignature();
 </script>
 </body>
 </html>
