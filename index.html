@@ -100,16 +100,45 @@ select, input[type="number"] { width: 70px; padding: 0.4rem; border-radius: 6px;
 #faq-content { font-size: 0.95em; color: #64748b; }
 #faq-content h3 { color: var(--primary); margin-top: 1.2em; }
 #faq-content ul { margin: 0 0 1em 1.2em; }
+
+/* ----------- AMÉLIORATION RESPONSIVE MOBILE ----------- */
 @media (max-width: 700px) {
   .footer { flex-direction: column; gap: 10px; }
   .btn-generate { width: 100%; }
   .nav-tabs { flex-wrap: wrap; gap: 5px; }
   .tab-btn { min-width: 80px; font-size: 0.85rem; padding: 0.6rem 0.5rem; }
+  .container { padding: 0.5rem; }
+  .form-section { padding: 1rem; }
+  .grid-forms { grid-template-columns: 1fr; gap: 0.5rem; }
+  .grid-items { grid-template-columns: 1fr; gap: 0.5rem; }
+  .item { flex-direction: column; align-items: flex-start; gap: 6px; }
+  .item label { margin-right: 0; }
+  .footer-info { font-size: 0.95rem; }
+  #logo-preview { max-width: 60px; max-height: 40px; }
+  .header-brand { padding: 1rem; }
 }
 @media (max-width: 500px) {
   .nav-tabs { flex-direction: column; align-items: stretch; }
   .tab-btn { width: 100%; min-width: unset; }
+  .container { padding: 0.2rem; }
+  .form-section { padding: 0.7rem; }
+  .footer { padding: 0.5rem; }
+  .footer-info { font-size: 0.9rem; }
+  .logo-text { font-size: 1.5rem; }
+  .logo-subtitle { font-size: 0.7rem; }
+  #logo-preview { max-width: 40px; max-height: 30px; }
+  .item { font-size: 0.95em; }
+  .accordion-header { font-size: 1em; padding: 0.7rem; }
 }
+@media (max-width: 400px) {
+  .form-section { padding: 0.4rem; }
+  .footer { padding: 0.2rem; }
+  .footer-info { font-size: 0.8rem; }
+  .logo-text { font-size: 1.1rem; }
+  .logo-subtitle { font-size: 0.6rem; }
+  #logo-preview { max-width: 30px; max-height: 20px; }
+}
+/* ----------- FIN AMÉLIORATION RESPONSIVE MOBILE ----------- */
 </style>
 </head>
 <body>
@@ -231,7 +260,10 @@ select, input[type="number"] { width: 70px; padding: 0.4rem; border-radius: 6px;
       <div class="grid-forms">
         <div class="form-group">
           <label>Catégorie</label>
-          <input type="text" id="new-cat" class="full-width" placeholder="Nouvelle ou existante">
+          <div style="display:flex;gap:6px;flex-direction:row;">
+            <select id="cat-select" class="full-width" style="flex:2;"></select>
+            <input type="text" id="new-cat" class="full-width" placeholder="Nouvelle catégorie" style="flex:3;">
+          </div>
         </div>
         <div class="form-group">
           <label>Nom du produit</label>
@@ -378,7 +410,6 @@ document.getElementById('logo-upload').addEventListener('change', function(e){
 });
 
 // --- BASE DE DONNÉES AVEC UNITÉS ---
-// !! COLLE ICI TA BASE DE DONNÉES PRODUITS/CATÉGORIES DE LA V2 !!
 const defaultDatabase = {
   "⚡ Éclairage Intérieur": {
     "Spot encastré LED": { price: 45, time: 0.5, unit: "u" },
@@ -690,7 +721,27 @@ function loadSignature() {
 }
 loadSignature();
 
-// --- AJOUT DE PRODUITS/CATÉGORIES ---
+// --- MENU DÉROULANT CATÉGORIE EXISTANTE + AJOUT PRODUIT ---
+function updateCatSelect() {
+  const catSel = document.getElementById('cat-select');
+  catSel.innerHTML = '<option value="">Catégorie existante</option>';
+  Object.keys(database).forEach(cat => {
+    catSel.innerHTML += `<option value="${cat}">${cat}</option>`;
+  });
+}
+updateCatSelect();
+
+document.getElementById('cat-select').addEventListener('change', function() {
+  if(this.value) {
+    document.getElementById('new-cat').value = this.value;
+  }
+});
+document.getElementById('new-cat').addEventListener('input', function() {
+  if(this.value !== document.getElementById('cat-select').value) {
+    document.getElementById('cat-select').value = "";
+  }
+});
+
 function addProduct() {
   const cat = document.getElementById('new-cat').value.trim();
   const prod = document.getElementById('new-prod').value.trim();
@@ -703,8 +754,10 @@ function addProduct() {
   database[cat][prod] = { price, time, unit };
   localStorage.setItem('zelio_full_v6', JSON.stringify(database));
   render();
+  updateCatSelect();
   showToast("Produit ajouté !");
   document.getElementById('new-cat').value = "";
+  document.getElementById('cat-select').value = "";
   document.getElementById('new-prod').value = "";
   document.getElementById('new-price').value = 0;
   document.getElementById('new-time').value = 0;
@@ -718,6 +771,7 @@ function deleteProduct(cat, prod) {
     if(Object.keys(database[cat]).length===0) delete database[cat];
     localStorage.setItem('zelio_full_v6', JSON.stringify(database));
     render();
+    updateCatSelect();
     showToast("Produit supprimé !");
   }
 }
