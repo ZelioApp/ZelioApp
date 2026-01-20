@@ -4,7 +4,9 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>ZELIO - Solution Devis Électricité</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<!-- Remplacement de html2pdf.js par PDFMake -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
 <style>
 :root {
   --primary: #4f46e5;
@@ -843,22 +845,27 @@ document.querySelectorAll('#c-name,#c-phone,#c-email,#c-addr,#c-site,#c-type,#c-
 });
 
 // --- PDF DEVIS (avec signature, logo, remise, acompte, tva, statut) ---
+// Remplacement par PDFMake
 function generatePDF() {
   saveFolder();
   const c = getClientData();
   const m = getArtisanData();
-  let rows = "", totalTime = 0, total = 0;
+  let rows = [], totalTime = 0, total = 0;
   document.querySelectorAll('.qty-in').forEach(s => {
     const q = parseInt(s.value);
     if(q > 0) {
       const obj = database[s.dataset.cat][s.dataset.prod];
-      rows += `<tr><td style="padding:10px; border-bottom:1px solid #eee;">${s.dataset.prod} <span style='color:#64748b;font-size:0.8em;'>(${obj.unit})</span></td><td style="text-align:center; border-bottom:1px solid #eee;">${q}</td><td style="text-align:right; border-bottom:1px solid #eee;">${obj.price}€</td><td style="text-align:right; border-bottom:1px solid #eee;">${q*obj.price}€</td></tr>`;
+      rows.push([
+        {text: s.dataset.prod + ` (${obj.unit})`, margin: [0, 2, 0, 2]},
+        {text: q.toString(), alignment: 'center', margin: [0, 2, 0, 2]},
+        {text: obj.price.toFixed(2) + " €", alignment: 'right', margin: [0, 2, 0, 2]},
+        {text: (q*obj.price).toFixed(2) + " €", alignment: 'right', margin: [0, 2, 0, 2]}
+      ]);
       totalTime += q * obj.time;
       total += q * obj.price;
     }
   });
-  if(!rows) return showToast("Le devis est vide !", "#ef4444");
-  // Remise, acompte, tva
+  if(!rows.length) return showToast("Le devis est vide !", "#ef4444");
   let discount = parseFloat(document.getElementById('discount').value) || 0;
   let totalRemise = total * (discount/100);
   let totalAfterRemise = total - totalRemise;
@@ -867,90 +874,143 @@ function generatePDF() {
   let deposit = parseFloat(document.getElementById('deposit').value) || 0;
   let totalTTC = totalAfterRemise + tvaAmount;
   let reste = totalTTC - deposit;
-  // Signature
-  let sigImg = signatureData ? `<img src="${signatureData}" style="max-width:220px; max-height:80px; border:1px solid #eee; border-radius:6px;">` : "<span style='color:#888;'>Non signée</span>";
-  // Logo
-  let logoHtml = logoData ? `<img src="${logoData}" style="max-width:90px; max-height:60px; margin-bottom:10px;">` : "";
-  // Statut
   let statut = document.getElementById('folder-status').value;
-  const element = document.createElement('div');
-  element.style.padding = "40px";
-  element.style.fontFamily = "sans-serif";
-  element.innerHTML = `
-    <div style="display:flex; justify-content:space-between; border-bottom:3px solid #4f46e5; padding-bottom:15px; margin-bottom:25px;">
-        <div>
-          ${logoHtml}
-          <h1 style="color:#4f46e5; margin:0;">${m.name || 'DEVIS ÉLECTRIQUE'}</h1>
-          <p style="font-size:12px; margin-top:5px;">SIRET: ${m.siret}<br>${m.addr}</p>
-        </div>
-        <div style="text-align:right;">
-          <h2>DEVIS N° ${Math.floor(Math.random()*1000)}</h2>
-          <p>Date: ${new Date().toLocaleDateString()}</p>
-          <span style="background:#e0e7ff; color:#4f46e5; padding:4px 10px; border-radius:6px; font-size:13px;">${statut}</span>
-        </div>
-    </div>
-    <div style="display:flex; justify-content:space-between; margin-bottom:35px; font-size:14px;">
-        <div style="width:48%; background:#f8fafc; padding:20px; border-radius:10px;">
-            <strong style="color:#4f46e5;">CLIENT :</strong><br>${c.name}<br>${c.addr}<br>Tél: ${c.phone}<br>${c.email}
-        </div>
-        <div style="width:48%; border:1px solid #e2e8f0; padding:20px; border-radius:10px;">
-            <strong style="color:#4f46e5;">DÉTAILS CHANTIER :</strong><br>Type: ${c.type}<br>Lieu: ${c.site || c.addr}
-        </div>
-    </div>
-    <h2 style="color:#4f46e5; margin-top:30px;">Notes du Chantier</h2>
-    <p style="background:#f8fafc; padding:10px; border-radius:8px; color:#333;">${c.notes || "Aucune note."}</p>
-    <table style="width:100%; border-collapse:collapse; font-size:13px; margin-top:20px;">
-        <tr style="background:#4f46e5; color:white;">
-            <th style="padding:12px; text-align:left;">Désignation</th><th style="padding:12px;">Qté</th><th style="padding:12px; text-align:right;">PU HT</th><th style="padding:12px; text-align:right;">Total HT</th>
-        </tr>
-        ${rows}
-    </table>
-    <div style="text-align:right; margin-top:40px;">
-        <p style="margin:5px 0;">Total HT : ${total.toLocaleString()} €</p>
-        <p style="margin:5px 0;">Remise : ${discount}% (-${totalRemise.toFixed(2)} €)</p>
-        <p style="margin:5px 0;">Total HT après remise : ${totalAfterRemise.toFixed(2)} €</p>
-        <p style="margin:5px 0;">TVA (${tva}%) : ${tvaAmount.toFixed(2)} €</p>
-        <h2 style="color:#4f46e5; margin-top:10px;">TOTAL TTC : ${totalTTC.toFixed(2)} €</h2>
-        <p style="margin:5px 0;">Acompte : ${deposit.toFixed(2)} €</p>
-        <p style="margin:5px 0;">Reste à payer : ${reste.toFixed(2)} €</p>
-        <p style="margin:5px 0;">Temps estimé : ${totalTime.toFixed(2)} h</p>
-    </div>
-    <div style="margin-top:50px; font-size:11px; color:#666; border-top:1px solid #eee; padding-top:15px;">
-        <p><strong>Conditions :</strong> Valable 30 jours. Assurance Décennale : ${m.ins}</p>
-        <p style="margin-top:20px;">Bon pour accord le : ____ / ____ / 20____ &nbsp;&nbsp;&nbsp; Cachet et Signature :</p>
-        <div>${sigImg}</div>
-    </div>
-  `;
-  element.style.display = "none";
-  document.body.appendChild(element);
-  html2pdf().from(element).set({ margin: 0.5, filename: `Devis_ZELIO_${c.name.replace(/[^\w\d]/g,'_')}.pdf`, html2canvas: { scale: 2 } }).save().then(() => {
-    document.body.removeChild(element);
-    showToast("PDF généré !");
+
+  // Logo et signature en base64
+  function getImageData(url, cb) {
+    if(!url) return cb(null);
+    let img = new Image();
+    img.crossOrigin = "Anonymous";
+    img.onload = function() {
+      let canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      canvas.getContext('2d').drawImage(img, 0, 0);
+      cb(canvas.toDataURL());
+    };
+    img.onerror = function() { cb(null); };
+    img.src = url;
+  }
+
+  // Génération PDFMake
+  getImageData(logoData, function(logoBase64) {
+    getImageData(signatureData, function(sigBase64) {
+      let docDefinition = {
+        pageMargins: [40, 40, 40, 40],
+        content: [
+          {
+            columns: [
+              [
+                logoBase64 ? {image: logoBase64, width: 90, margin: [0,0,0,10]} : {},
+                {text: m.name || 'DEVIS ÉLECTRIQUE', color: '#4f46e5', fontSize: 20, bold: true, margin: [0,0,0,0]},
+                {text: `SIRET: ${m.siret}\n${m.addr}`, fontSize: 10, margin: [0,5,0,0]}
+              ],
+              [
+                {text: `DEVIS N° ${Math.floor(Math.random()*1000)}`, alignment: 'right', fontSize: 16, bold: true},
+                {text: `Date: ${new Date().toLocaleDateString()}`, alignment: 'right', fontSize: 10, margin: [0,5,0,0]},
+                {text: statut, alignment: 'right', color: '#4f46e5', fontSize: 12, margin: [0,5,0,0], decoration: 'underline'}
+              ]
+            ]
+          },
+          {text: " "},
+          {
+            columns: [
+              {
+                width: '48%',
+                stack: [
+                  {text: "CLIENT :", color: '#4f46e5', bold: true, fontSize: 12},
+                  {text: `${c.name}\n${c.addr}\nTél: ${c.phone}\n${c.email}`, fontSize: 10}
+                ],
+                fillColor: '#f8fafc',
+                margin: [0,0,10,0],
+                border: [false, false, false, false],
+                style: 'box'
+              },
+              {
+                width: '48%',
+                stack: [
+                  {text: "DÉTAILS CHANTIER :", color: '#4f46e5', bold: true, fontSize: 12},
+                  {text: `Type: ${c.type}\nLieu: ${c.site || c.addr}`, fontSize: 10}
+                ],
+                border: [true, true, true, true],
+                margin: [10,0,0,0],
+                style: 'box'
+              }
+            ]
+          },
+          {text: " "},
+          {text: "Notes du Chantier", color: '#4f46e5', fontSize: 14, bold: true, margin: [0,10,0,2]},
+          {text: c.notes || "Aucune note.", fillColor: '#f8fafc', fontSize: 10, margin: [0,0,0,10]},
+          {
+            table: {
+              headerRows: 1,
+              widths: ['*', 30, 50, 60],
+              body: [
+                [
+                  {text: "Désignation", fillColor: '#4f46e5', color: 'white', bold: true, fontSize: 12},
+                  {text: "Qté", fillColor: '#4f46e5', color: 'white', bold: true, fontSize: 12},
+                  {text: "PU HT", fillColor: '#4f46e5', color: 'white', bold: true, fontSize: 12},
+                  {text: "Total HT", fillColor: '#4f46e5', color: 'white', bold: true, fontSize: 12}
+                ]
+              ].concat(rows)
+            },
+            layout: 'lightHorizontalLines',
+            margin: [0,10,0,0]
+          },
+          {
+            alignment: 'right',
+            margin: [0,20,0,0],
+            table: {
+              widths: ['*', 120],
+              body: [
+                ["Total HT :", {text: total.toLocaleString() + " €", bold: true}],
+                ["Remise :", {text: `${discount}% (-${totalRemise.toFixed(2)} €)`}],
+                ["Total HT après remise :", {text: totalAfterRemise.toFixed(2) + " €"}],
+                [`TVA (${tva}%) :`, {text: tvaAmount.toFixed(2) + " €"}],
+                [{text: "TOTAL TTC :", color: '#4f46e5', bold: true}, {text: totalTTC.toFixed(2) + " €", color: '#4f46e5', bold: true}],
+                ["Acompte :", {text: deposit.toFixed(2) + " €"}],
+                ["Reste à payer :", {text: reste.toFixed(2) + " €"}],
+                ["Temps estimé :", {text: totalTime.toFixed(2) + " h"}]
+              ]
+            },
+            layout: 'noBorders'
+          },
+          {text: " "},
+          {text: "Conditions : Valable 30 jours. Assurance Décennale : " + m.ins, fontSize: 9, color: '#666', margin: [0,10,0,0]},
+          {text: "Bon pour accord le : ____ / ____ / 20____    Cachet et Signature :", fontSize: 9, color: '#666', margin: [0,10,0,0]},
+          sigBase64 ? {image: sigBase64, width: 220, margin: [0,10,0,0]} : {text: "Non signée", color: '#888', margin: [0,10,0,0]}
+        ],
+        styles: {
+          box: {border: [true, true, true, true], margin: [0,0,0,0], fontSize: 10, borderColor: '#e2e8f0', borderWidth: 1, borderRadius: 10}
+        }
+      };
+      pdfMake.createPdf(docDefinition).download(`Devis_ZELIO_${c.name.replace(/[^\w\d]/g,'_')}.pdf`);
+      showToast("PDF généré !");
+    });
   });
 }
 
 // --- PDF RAPPORT (idem, + photos, + notes internes) ---
+// Remplacement par PDFMake
 function generateReport() {
   saveFolder();
   const c = getClientData();
   const m = getArtisanData();
-  let rows = "", totalTime = 0, total = 0;
+  let rows = [], totalTime = 0, total = 0;
   document.querySelectorAll('.qty-in').forEach(s => {
     const q = parseInt(s.value);
     if(q > 0) {
       const obj = database[s.dataset.cat][s.dataset.prod];
-      rows += `<tr><td style="padding:10px; border-bottom:1px solid #eee;">${s.dataset.prod} <span style='color:#64748b;font-size:0.8em;'>(${obj.unit})</span></td><td style="text-align:center; border-bottom:1px solid #eee;">${q}</td><td style="text-align:right; border-bottom:1px solid #eee;">${obj.price}€</td><td style="text-align:right; border-bottom:1px solid #eee;">${q*obj.price}€</td></tr>`;
+      rows.push([
+        {text: s.dataset.prod + ` (${obj.unit})`, margin: [0, 2, 0, 2]},
+        {text: q.toString(), alignment: 'center', margin: [0, 2, 0, 2]},
+        {text: obj.price.toFixed(2) + " €", alignment: 'right', margin: [0, 2, 0, 2]},
+        {text: (q*obj.price).toFixed(2) + " €", alignment: 'right', margin: [0, 2, 0, 2]}
+      ]);
       totalTime += q * obj.time;
       total += q * obj.price;
     }
   });
-  let photosHtml = "";
-  if(photos.length) {
-    photosHtml = `<div style="margin:20px 0; display:flex; flex-wrap:wrap; gap:10px;">` +
-      photos.map(src => `<img src="${src}" style="width:180px; height:130px; object-fit:cover; border-radius:8px; border:1px solid #ccc;">`).join('') +
-      `</div>`;
-  }
-  // Remise, acompte, tva
   let discount = parseFloat(document.getElementById('discount').value) || 0;
   let totalRemise = total * (discount/100);
   let totalAfterRemise = total - totalRemise;
@@ -959,70 +1019,136 @@ function generateReport() {
   let deposit = parseFloat(document.getElementById('deposit').value) || 0;
   let totalTTC = totalAfterRemise + tvaAmount;
   let reste = totalTTC - deposit;
-  // Signature
-  let sigImg = signatureData ? `<img src="${signatureData}" style="max-width:220px; max-height:80px; border:1px solid #eee; border-radius:6px;">` : "<span style='color:#888;'>Non signée</span>";
-  // Logo
-  let logoHtml = logoData ? `<img src="${logoData}" style="max-width:90px; max-height:60px; margin-bottom:10px;">` : "";
-  // Statut
   let statut = document.getElementById('folder-status').value;
-  const element = document.createElement('div');
-  element.style.padding = "40px";
-  element.style.fontFamily = "sans-serif";
-  element.innerHTML = `
-    <div style="display:flex; justify-content:space-between; border-bottom:3px solid #4f46e5; padding-bottom:15px; margin-bottom:25px;">
-        <div>
-          ${logoHtml}
-          <h1 style="color:#4f46e5; margin:0;">${m.name || 'RAPPORT DE CHANTIER'}</h1>
-          <p style="font-size:12px; margin-top:5px;">SIRET: ${m.siret}<br>${m.addr}</p>
-        </div>
-        <div style="text-align:right;">
-          <h2>RAPPORT N° ${Math.floor(Math.random()*1000)}</h2>
-          <p>Date: ${new Date().toLocaleDateString()}</p>
-          <span style="background:#e0e7ff; color:#4f46e5; padding:4px 10px; border-radius:6px; font-size:13px;">${statut}</span>
-        </div>
-    </div>
-    <div style="display:flex; justify-content:space-between; margin-bottom:35px; font-size:14px;">
-        <div style="width:48%; background:#f8fafc; padding:20px; border-radius:10px;">
-            <strong style="color:#4f46e5;">CLIENT :</strong><br>${c.name}<br>${c.addr}<br>Tél: ${c.phone}<br>${c.email}
-        </div>
-        <div style="width:48%; border:1px solid #e2e8f0; padding:20px; border-radius:10px;">
-            <strong style="color:#4f46e5;">DÉTAILS CHANTIER :</strong><br>Type: ${c.type}<br>Lieu: ${c.site || c.addr}
-        </div>
-    </div>
-    <h2 style="color:#4f46e5;">Photos du Chantier</h2>
-    ${photosHtml || "<p style='color:#888;'>Aucune photo ajoutée.</p>"}
-    <h2 style="color:#4f46e5; margin-top:30px;">Notes du Chantier</h2>
-    <p style="background:#f8fafc; padding:10px; border-radius:8px; color:#333;">${c.notes || "Aucune note."}</p>
-    <h2 style="color:#4f46e5; margin-top:30px;">Notes internes</h2>
-    <p style="background:#f1f5f9; padding:10px; border-radius:8px; color:#888;">${c.notes_internal || "Aucune note interne."}</p>
-    <h2 style="color:#4f46e5; margin-top:30px;">Liste des Prestations</h2>
-    <table style="width:100%; border-collapse:collapse; font-size:13px;">
-        <tr style="background:#4f46e5; color:white;">
-            <th style="padding:12px; text-align:left;">Désignation</th><th style="padding:12px;">Qté</th><th style="padding:12px; text-align:right;">PU HT</th><th style="padding:12px; text-align:right;">Total HT</th>
-        </tr>
-        ${rows || "<tr><td colspan='4' style='text-align:center; color:#888; padding:20px;'>Aucune prestation sélectionnée.</td></tr>"}
-    </table>
-    <div style="text-align:right; margin-top:40px;">
-        <p style="margin:5px 0;">Total HT : ${total.toLocaleString()} €</p>
-        <p style="margin:5px 0;">Remise : ${discount}% (-${totalRemise.toFixed(2)} €)</p>
-        <p style="margin:5px 0;">Total HT après remise : ${totalAfterRemise.toFixed(2)} €</p>
-        <p style="margin:5px 0;">TVA (${tva}%) : ${tvaAmount.toFixed(2)} €</p>
-        <h2 style="color:#4f46e5; margin-top:10px;">TOTAL TTC : ${totalTTC.toFixed(2)} €</h2>
-        <p style="margin:5px 0;">Acompte : ${deposit.toFixed(2)} €</p>
-        <p style="margin:5px 0;">Reste à payer : ${reste.toFixed(2)} €</p>
-        <p style="margin:5px 0;">Temps estimé : ${totalTime.toFixed(2)} h</p>
-    </div>
-    <div style="margin-top:50px; font-size:11px; color:#666; border-top:1px solid #eee; padding-top:15px;">
-        <p><strong>Conditions :</strong> Valable 30 jours. Assurance Décennale : ${m.ins}</p>
-        <p style="margin-top:20px;">Signature du client :</p>
-        <div>${sigImg}</div>
-    </div>
-  `;
-  element.style.display = "none";
-  document.body.appendChild(element);
-  html2pdf().from(element).set({ margin: 0.5, filename: `Rapport_ZELIO_${c.name.replace(/[^\w\d]/g,'_')}.pdf`, html2canvas: { scale: 2 } }).save().then(() => {
-    document.body.removeChild(element);
-    showToast("PDF généré !");
+
+  // Logo et signature en base64
+  function getImageData(url, cb) {
+    if(!url) return cb(null);
+    let img = new Image();
+    img.crossOrigin = "Anonymous";
+    img.onload = function() {
+      let canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      canvas.getContext('2d').drawImage(img, 0, 0);
+      cb(canvas.toDataURL());
+    };
+    img.onerror = function() { cb(null); };
+    img.src = url;
+  }
+
+  // Génération PDFMake
+  getImageData(logoData, function(logoBase64) {
+    getImageData(signatureData, function(sigBase64) {
+      // Photos chantier
+      let photosContent = [];
+      if(photos.length) {
+        let photoRow = [];
+        for(let i=0; i<photos.length; i++) {
+          photoRow.push({image: photos[i], width: 180, height: 130, margin: [0,0,10,10]});
+          if(photoRow.length === 3 || i === photos.length-1) {
+            photosContent.push({columns: photoRow});
+            photoRow = [];
+          }
+        }
+      }
+      let docDefinition = {
+        pageMargins: [40, 40, 40, 40],
+        content: [
+          {
+            columns: [
+              [
+                logoBase64 ? {image: logoBase64, width: 90, margin: [0,0,0,10]} : {},
+                {text: m.name || 'RAPPORT DE CHANTIER', color: '#4f46e5', fontSize: 20, bold: true, margin: [0,0,0,0]},
+                {text: `SIRET: ${m.siret}\n${m.addr}`, fontSize: 10, margin: [0,5,0,0]}
+              ],
+              [
+                {text: `RAPPORT N° ${Math.floor(Math.random()*1000)}`, alignment: 'right', fontSize: 16, bold: true},
+                {text: `Date: ${new Date().toLocaleDateString()}`, alignment: 'right', fontSize: 10, margin: [0,5,0,0]},
+                {text: statut, alignment: 'right', color: '#4f46e5', fontSize: 12, margin: [0,5,0,0], decoration: 'underline'}
+              ]
+            ]
+          },
+          {text: " "},
+          {
+            columns: [
+              {
+                width: '48%',
+                stack: [
+                  {text: "CLIENT :", color: '#4f46e5', bold: true, fontSize: 12},
+                  {text: `${c.name}\n${c.addr}\nTél: ${c.phone}\n${c.email}`, fontSize: 10}
+                ],
+                fillColor: '#f8fafc',
+                margin: [0,0,10,0],
+                border: [false, false, false, false],
+                style: 'box'
+              },
+              {
+                width: '48%',
+                stack: [
+                  {text: "DÉTAILS CHANTIER :", color: '#4f46e5', bold: true, fontSize: 12},
+                  {text: `Type: ${c.type}\nLieu: ${c.site || c.addr}`, fontSize: 10}
+                ],
+                border: [true, true, true, true],
+                margin: [10,0,0,0],
+                style: 'box'
+              }
+            ]
+          },
+          {text: " "},
+          {text: "Photos du Chantier", color: '#4f46e5', fontSize: 14, bold: true, margin: [0,10,0,2]},
+          photosContent.length ? photosContent : {text: "Aucune photo ajoutée.", color: '#888', fontSize: 10, margin: [0,0,0,10]},
+          {text: "Notes du Chantier", color: '#4f46e5', fontSize: 14, bold: true, margin: [0,10,0,2]},
+          {text: c.notes || "Aucune note.", fillColor: '#f8fafc', fontSize: 10, margin: [0,0,0,10]},
+          {text: "Notes internes", color: '#4f46e5', fontSize: 14, bold: true, margin: [0,10,0,2]},
+          {text: c.notes_internal || "Aucune note interne.", fillColor: '#f1f5f9', color: '#888', fontSize: 10, margin: [0,0,0,10]},
+          {text: "Liste des Prestations", color: '#4f46e5', fontSize: 14, bold: true, margin: [0,10,0,2]},
+          {
+            table: {
+              headerRows: 1,
+              widths: ['*', 30, 50, 60],
+              body: [
+                [
+                  {text: "Désignation", fillColor: '#4f46e5', color: 'white', bold: true, fontSize: 12},
+                  {text: "Qté", fillColor: '#4f46e5', color: 'white', bold: true, fontSize: 12},
+                  {text: "PU HT", fillColor: '#4f46e5', color: 'white', bold: true, fontSize: 12},
+                  {text: "Total HT", fillColor: '#4f46e5', color: 'white', bold: true, fontSize: 12}
+                ]
+              ].concat(rows.length ? rows : [[{text:"Aucune prestation sélectionnée.", colSpan:4, alignment:'center', color:'#888', margin:[0,10,0,10]}, {}, {}, {}]])
+            },
+            layout: 'lightHorizontalLines',
+            margin: [0,10,0,0]
+          },
+          {
+            alignment: 'right',
+            margin: [0,20,0,0],
+            table: {
+              widths: ['*', 120],
+              body: [
+                ["Total HT :", {text: total.toLocaleString() + " €", bold: true}],
+                ["Remise :", {text: `${discount}% (-${totalRemise.toFixed(2)} €)`}],
+                ["Total HT après remise :", {text: totalAfterRemise.toFixed(2) + " €"}],
+                [`TVA (${tva}%) :`, {text: tvaAmount.toFixed(2) + " €"}],
+                [{text: "TOTAL TTC :", color: '#4f46e5', bold: true}, {text: totalTTC.toFixed(2) + " €", color: '#4f46e5', bold: true}],
+                ["Acompte :", {text: deposit.toFixed(2) + " €"}],
+                ["Reste à payer :", {text: reste.toFixed(2) + " €"}],
+                ["Temps estimé :", {text: totalTime.toFixed(2) + " h"}]
+              ]
+            },
+            layout: 'noBorders'
+          },
+          {text: " "},
+          {text: "Conditions : Valable 30 jours. Assurance Décennale : " + m.ins, fontSize: 9, color: '#666', margin: [0,10,0,0]},
+          {text: "Signature du client :", fontSize: 9, color: '#666', margin: [0,10,0,0]},
+          sigBase64 ? {image: sigBase64, width: 220, margin: [0,10,0,0]} : {text: "Non signée", color: '#888', margin: [0,10,0,0]}
+        ],
+        styles: {
+          box: {border: [true, true, true, true], margin: [0,0,0,0], fontSize: 10, borderColor: '#e2e8f0', borderWidth: 1, borderRadius: 10}
+        }
+      };
+      pdfMake.createPdf(docDefinition).download(`Rapport_ZELIO_${c.name.replace(/[^\w\d]/g,'_')}.pdf`);
+      showToast("PDF généré !");
+    });
   });
 }
 
